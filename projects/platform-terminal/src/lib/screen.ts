@@ -28,7 +28,10 @@ export class Screen {
   }
 
   private init() {
-    this.screen = blessed.screen({ smartCSR: true });
+    this.screen = blessed.screen({
+      smartCSR: true,
+      fullUnicode: true,
+    });
     this.setupExitListener();
   }
 

@@ -15,7 +15,24 @@ class DeferredElement {
   props: DeferredGridChildElementParams = {};
   data: any;
 
-  element: ContribWidgets.LineElement;
+  private events = new Map<string, (...args: any[]) => void>();
+  private _element: ContribWidgets.LineElement;
+
+  set element(el: ContribWidgets.LineElement) {
+    this._element = el;
+
+    this.events.forEach((callback, event) => {
+      this._element.on(event, callback);
+    });
+  }
+
+  get element(): ContribWidgets.LineElement {
+    return this._element;
+  }
+
+  on(event: string, listener: (...args: any[]) => void): any {
+    this.events.set(event, listener);
+  }
 
   appendTo(parent: ContribWidgets.GridElement) {
     this.parent = parent;

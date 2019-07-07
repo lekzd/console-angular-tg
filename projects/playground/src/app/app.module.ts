@@ -10,6 +10,7 @@ import { DashboardComponent } from './3-dashboard/3-dashboard.component';
 import { SparklineService } from './sparkline.service';
 import { ServerUtilizationService } from './server-utilization.service';
 import { ProcessManagerService } from './process-manager.service';
+import {TgClient} from '../tbClient';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { ProcessManagerService } from './process-manager.service';
     SparklineService,
     ServerUtilizationService,
     ProcessManagerService,
+    TgClient,
   ],
   bootstrap: [AppComponent],
   schemas: [NO_ERRORS_SCHEMA],
