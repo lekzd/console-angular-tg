@@ -1,109 +1,43 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
 import {TgClient} from '../tbClient';
-import {BehaviorSubject, interval, merge, Subject} from 'rxjs';
-import {switchMap, timeInterval, timeout, timeoutWith} from 'rxjs/internal/operators';
-import {fromPromise} from 'rxjs/internal/observable/fromPromise';
-import {Widgets} from "blessed";
-import {IChatFullData, IMessage, IUser} from "../tgInterfaces";
+import {BehaviorSubject, merge, Subject} from 'rxjs';
+import {Widgets} from 'blessed';
+import {IChatFullData, IUpdateConnectionStateEvent} from '../tgInterfaces';
+import {AppService} from './app.service';
+import {filter, map} from 'rxjs/internal/operators';
+import {ConversationsService} from './conversations/conversations.service';
+import {ChatService} from './chat/chat.service';
+
+type IElementRef<T> = ElementRef<{element: T}>;
 
 @Component({
   selector: 'pl-root',
   template: `
+    <pl-conversations [style]="{transparent: true}"></pl-conversations>
+    <pl-chat [style]="{transparent: true}"></pl-chat>
 
-    <grid rows="12" cols="12">
-    <!--<pl-1-plain-text></pl-1-plain-text>-->
-    <!--<pl-2-text-in-box></pl-2-text-in-box>-->
-    <!--<pl-3-dashboard></pl-3-dashboard>-->
-    <!--{{data}}-->
+    <textbox
+      border="line"
+      [left]="0"
+      [bottom]="0"
+      [right]="20"
+      [height]="3"
+      [padding]="{left: 1}"
+      [inputOnFocus]="true"
+      [keys]="true"
+      [mouse]="true"
+      (submit)="onSubmit($event)"
+      #textBox
+      [style]="elementStyle"
+    >
+    </textbox>
 
-      <!--<table-->
-        <!--[row]="0"-->
-        <!--[col]="0"-->
-        <!--[rowSpan]="11"-->
-        <!--[colSpan]="6"-->
-        <!--fg="green"-->
-        <!--label="Chats"-->
-        <!--selectedFg="white-fg"-->
-        <!--selectedBg="#007700"-->
-        <!--[interactive]="true"-->
-        <!--[keys]="true"-->
-        <!--[columnSpacing]="1"-->
-        <!--[columnWidth]="[100]"-->
-        <!--(action)="onSelect($event)"-->
-        <!--[style]="{-->
-          <!--focus: {-->
-            <!--border: {-->
-              <!--fg: 'blue'-->
-            <!--}-->
-          <!--}-->
-        <!--}"-->
-        <!--[data]="chats$ | async">-->
-      <!--</table>-->
-
-      <list
-        [row]="0"
-        [col]="0"
-        [rowSpan]="11"
-        [colSpan]="listColSpan$ | async"
-        fg="green"
-        label="Chats"
-        selectedFg="white-fg"
-        selectedBg="#007700"
-        [keys]="true"
-        [tags]="true"
-        #list
-        [style]="elementStyle"
-        [items]="chats$ | async">
-      </list>
-
-      <list
-        [row]="0"
-        [col]="listColSpan$ | async"
-        [rowSpan]="11"
-        [colSpan]="messagesColSpan$ | async"
-        fg="green"
-        [label]="activeChatTitle$ | async"
-        selectedFg="white-fg"
-        selectedBg="#007700"
-        [keys]="true"
-        [tags]="true"
-        #messagesList
-        [style]="elementStyle"
-        [items]="messages$ | async">
-      </list>
-
-      <!--<log-->
-        <!--[row]="0"-->
-        <!--[col]="6"-->
-        <!--[rowSpan]="11"-->
-        <!--[colSpan]="6"-->
-        <!--fg="white"-->
-        <!--label="Messages"-->
-        <!--[logLines]="messages$ | async"-->
-      <!--&gt;</log>-->
-
-      <textbox
-        [row]="11"
-        [col]="0"
-        [rowSpan]="2"
-        [colSpan]="10"
-        [inputOnFocus]="true"
-        [keys]="true"
-        [mouse]="true"
-        #textBox
-        [style]="elementStyle"
-        fg="green"
-      >
-      </textbox>
-
-    </grid>
-
-    <box bottom="0"
-         right="0"
-         height="3"
-         width="21"
+    <box [bottom]="0"
+         [right]="0"
+         [height]="2"
+         [width]="20"
+         [content]=""
          [style]="style">
-      {{input$ | async}}
     </box>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,15 +45,19 @@ import {IChatFullData, IMessage, IUser} from "../tgInterfaces";
 export class AppComponent implements OnInit {
 
   data = 'Loading...';
-  allChats$ = new BehaviorSubject<IChatFullData[]>([]);
-  chats$ = new BehaviorSubject<string[]>([]);
   keyPress$ = new Subject<string>();
   input$ = new BehaviorSubject<string>('');
-  messages$ = new BehaviorSubject<string[]>(['11111', '2222']);
-  activeChatTitle$ = new BehaviorSubject<string>('<--Выберите чат');
 
-  messagesColSpan$ = new BehaviorSubject<number>(4);
-  listColSpan$ = new BehaviorSubject<number>(8);
+  updatesCount = 0;
+
+  connectionState$ = merge(
+    this.tgClient.updates$
+      .pipe(
+        // filter(event => event['@type'] === 'updateConnectionState')
+        map(() => (this.updatesCount++).toString())
+      )
+  // ).pipe(map(event => event['@type']));
+  );
 
   style = {
     fg: 'white',
@@ -130,70 +68,37 @@ export class AppComponent implements OnInit {
   };
 
   elementStyle = {
+    bg: 'black-bg',
+    fg: 'grey',
     focus: {
+      fg: 'white',
       border: {
         fg: 'blue',
-      }
+        bg: 'black-bg',
+      },
     },
     border: {
       fg: 'grey',
+      bg: 'black-bg',
     },
   };
 
-  @ViewChild('list', {static: true})
-  listChild: ElementRef<Widgets.ListElement>;
-
-  @ViewChild('messagesList', {static: true})
-  messagesListRef: ElementRef<Widgets.ListElement>;
-
   @ViewChild('textBox', {static: true})
-  textBoxRef: ElementRef<Widgets.ListElement>;
-
-  private selectedChat: IChatFullData;
-
-  // @HostListener('document:keypress', ['$event'])
-  // onKeyPress(event: any) {
-  //   if (event.char) {
-  //     this.keyPress$.next(event.char);
-  //   }
-  // }
-
-  onSelect(event: any) {}
-
-  generateTable(chatsData: IChatFullData[]) {
-    const chats = chatsData.slice(0, 100);
-
-    const data = chats.map(chatFull => {
-      const defaultStyle = `{${'#6c6c6c'}-fg}`;
-      const accentStyles = chatFull.unread_count ? `{${'#00afff'}-fg}` : defaultStyle;
-      const textStyles = chatFull.unread_count ? `{${'#00ff00'}-fg}` : defaultStyle;
-
-      const unreadStr = `${(chatFull.unread_count.toString() as any).padEnd(5, ' ')}`;
-
-      return `${accentStyles}${unreadStr}{/} ${textStyles}${chatFull.title}{/}`;
-    });
-
-    return data;
+  set setInputElement(ref: IElementRef<Widgets.TextboxElement>) {
+    this.appService.inputRef = ref.nativeElement;
   }
+
+  private selectedIndex = 0;
 
   constructor(
     private tgClient: TgClient,
-    private changeDetectorRef: ChangeDetectorRef,
     private renderer2: Renderer2,
+    public appService: AppService,
+    public chatService: ChatService,
+    private conversationsService: ConversationsService,
   ) {
-    merge(
-      fromPromise(this.tgClient.getCharts()),
-      interval(30000)
-    )
-      .pipe(switchMap(() => fromPromise(this.tgClient.getCharts())))
-      .subscribe(chatsData => {
-        this.allChats$.next(chatsData);
-        this.chats$.next(this.generateTable(chatsData));
 
-        this.changeDetectorRef.markForCheck();
-      });
-
-    this.renderer2.selectRootElement('').on('keypress', (key) => {
+    this.renderer2.data.root.on('keypress', (key) => {
       if (key) {
         this.keyPress$.next(key);
       }
@@ -206,39 +111,69 @@ export class AppComponent implements OnInit {
         this.input$.next(this.input$.value + letter);
       });
 
-    this.listChild.nativeElement.on('select item', (selectedItem) => {
-      const selectedIndex = (selectedItem.parent as any).selected;
+    // this.tgClient.updates$.pipe(
+    //   filter(event => event['@type'] === 'updateChatLastMessage')
+    // ).subscribe(update => {
+    //   debugger;
+    // });
 
-      this.selectedChat = this.allChats$.value[selectedIndex];
-    });
+    setTimeout(() => {
+      this.appService.focusList();
+      this.appService.listRef.element.on('select item', (selectedItem) => {
+        this.selectedIndex = (selectedItem.parent as any).selected;
+      });
+    }, 1000);
+
+    const commands = {
+      't': () => {
+        const chat = this.conversationsService.all$.value[this.selectedIndex];
+        this.chatService.current$.next(chat);
+      },
+      'е': () => {
+        const chat = this.conversationsService.all$.value[this.selectedIndex];
+        this.chatService.current$.next(chat);
+      },
+      'a': () => {
+        this.appService.focusList();
+      },
+      'ф': () => {
+        this.appService.focusList();
+      },
+      's': () => {
+        this.appService.focusTextBox();
+      },
+      'ы': () => {
+        this.appService.focusTextBox();
+      },
+      'd': () => {
+        this.appService.focusChat();
+      },
+      'в': () => {
+        this.appService.focusChat();
+      },
+      'r': () => {
+        this.appService.reRender();
+      },
+      'к': () => {
+        this.appService.reRender();
+      }
+    };
 
     this.input$
       .subscribe(input => {
-        if (input === 't') {
-          this.input$.next('');
-
-          this.openSelectedChat();
+        if (!input) {
+          return;
         }
 
-        if (input === 'a') {
-          this.input$.next('');
+        const matched = Object.keys(commands).some(key => key.startsWith(input));
 
-          this.focusList();
+        if (!matched) {
+          this.input$.next('');
         }
 
-        if (input === 'x') {
-          this.input$.next('');
+        if (commands.hasOwnProperty(input)) {
+          commands[input]();
 
-          this.focusTextBox();
-        }
-
-        if (input === 's') {
-          this.input$.next('');
-
-          this.focusChat();
-        }
-
-        if (input.length > 3) {
           this.input$.next('');
         }
       });
@@ -249,89 +184,13 @@ export class AppComponent implements OnInit {
     // });
   }
 
-  private formatDate(timestamp: number): string {
-    const date = new Date(timestamp);
-    const parts = [
-      date.getHours(),
-      date.getMinutes()
-    ].map(s => (s.toString() as any).padStart(2, '0'));
-
-    return parts.join(':');
-  }
-
-  private formatUser(user: IUser): string {
-    if (user.first_name && user.last_name) {
-      return `${user.first_name} ${user.last_name}`;
+  onSubmit(event) {
+    if (this.chatService.current$.value) {
+      this.tgClient.sendTextMessage(event, this.chatService.current$.value.id)
+        .then(() => {
+          this.appService.inputRef.element.clearValue();
+          this.appService.reRender();
+        });
     }
-
-    if (user.username) {
-      return `@${user.username}`;
-    }
-
-    return `[unknown user]`;
-  }
-
-  private getMessagesString(message: IMessage, user: IUser): string {
-    switch (message.content['@type']) {
-      case 'messageText':
-        return `${this.formatDate(message.date)}> ${this.formatUser(user)}: ${message.content.text.text}`;
-      default:
-        return `${this.formatDate(message.date)}> ${this.formatUser(user)}: [${message.content['@type']}]`;
-    }
-  }
-
-  private async openSelectedChat() {
-    if (this.selectedChat) {
-      this.activeChatTitle$.next(this.selectedChat.title);
-      const [lastAuthor] = await this.tgClient.getMessagesAuthors([this.selectedChat.last_message]);
-      this.messages$.next([
-        '...loading...',
-        this.getMessagesString(this.selectedChat.last_message, lastAuthor)
-      ]);
-
-      const messages = await this.tgClient.getMessages(this.selectedChat);
-      const users = await this.tgClient.getMessagesAuthors(messages);
-      const strings = messages.reverse().map(message => {
-        return this.getMessagesString(message, users.find(user => user.id === message.sender_user_id));
-      });
-
-      setTimeout(() => {
-        const list = (this.messagesListRef.nativeElement as any).element;
-
-        list.select(strings.length - 1);
-        list.scrollTo(strings.length - 1);
-      });
-
-      this.messages$.next(strings);
-
-      debugger;
-    }
-  }
-
-  private focusChat() {
-    const list = (this.messagesListRef.nativeElement as any).element;
-
-    this.listColSpan$.next(4);
-    this.messagesColSpan$.next(8);
-
-    list.focus();
-  }
-
-  private focusList() {
-    const list = (this.listChild.nativeElement as any).element;
-
-    this.listColSpan$.next(8);
-    this.messagesColSpan$.next(4);
-
-    list.focus();
-  }
-
-  private focusTextBox() {
-    const list = (this.textBoxRef.nativeElement as any).element;
-
-    this.listColSpan$.next(4);
-    this.messagesColSpan$.next(8);
-
-    list.focus();
   }
 }

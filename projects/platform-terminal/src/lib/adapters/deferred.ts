@@ -30,12 +30,34 @@ class DeferredElement {
     return this._element;
   }
 
+  get children(): any[] {
+    return this._element ? this._element.children : [];
+  }
+
   on(event: string, listener: (...args: any[]) => void): any {
     this.events.set(event, listener);
   }
 
   appendTo(parent: ContribWidgets.GridElement) {
     this.parent = parent;
+  }
+
+  detach() {
+    if (this._element) {
+      this._element.detach();
+    }
+  }
+
+  emit(event) {
+    if (this._element) {
+      this._element.emit(event);
+    }
+  }
+
+  free() {
+    if (this._element) {
+      this._element.free();
+    }
   }
 }
 

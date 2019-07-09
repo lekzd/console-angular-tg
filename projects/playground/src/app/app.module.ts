@@ -3,31 +3,27 @@ import { CommonModule } from '@angular/common';
 import { TerminalModule } from 'platform-terminal';
 
 import { AppComponent } from './app.component';
-import { TransactionsService } from './transactions.service';
-import { PlainTextComponent } from './1-plain-text/1-plain-text.component';
-import { TextInBoxComponent } from './2-text-in-box/2-text-in-box.component';
-import { DashboardComponent } from './3-dashboard/3-dashboard.component';
-import { SparklineService } from './sparkline.service';
-import { ServerUtilizationService } from './server-utilization.service';
-import { ProcessManagerService } from './process-manager.service';
 import {TgClient} from '../tbClient';
+import {ChatComponent} from './chat/chat.component';
+import {AppService} from './app.service';
+import {ConversationsComponent} from './conversations/conversations.component';
+import {ConversationsService} from './conversations/conversations.service';
+import {ChatService} from './chat/chat.service';
 
 @NgModule({
   declarations: [
     AppComponent,
-    PlainTextComponent,
-    TextInBoxComponent,
-    DashboardComponent,
+    ChatComponent,
+    ConversationsComponent,
   ],
   imports: [
     TerminalModule,
     CommonModule,
   ],
   providers: [
-    TransactionsService,
-    SparklineService,
-    ServerUtilizationService,
-    ProcessManagerService,
+    AppService,
+    ChatService,
+    ConversationsService,
     TgClient,
   ],
   bootstrap: [AppComponent],

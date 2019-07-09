@@ -1,5 +1,5 @@
 
-type IMessageContent = IMessageTextContent;
+type IMessageContent = IMessageTextContent & IMessageStickerContent;
 
 export interface IMessageTextContent {
   '@type': 'messageText';
@@ -7,6 +7,31 @@ export interface IMessageTextContent {
     '@type': 'formattedText';
     text: string;
   };
+}
+
+export interface IMessageStickerContent {
+  '@type': 'messageSticker';
+  sticker: {
+    '@type': 'sticker';
+    emoji: '😂';
+    height: number;
+    is_mask: boolean;
+    set_id: string;
+    sticker: {
+      '@type': 'file';
+      id: number;
+      size: number;
+      expected_size: number;
+    };
+    thumbnail: {
+      '@type': 'photoSize';
+      type: string;
+      photo: any;
+      width: number;
+      height: number;
+    };
+    width: 512;
+  }
 }
 
 export interface IMessagesResponse {
@@ -152,3 +177,134 @@ export interface IUser {
   };
   'language_code': string;
 }
+
+export interface IOkResponse {
+  '@type': 'ok';
+}
+
+export type IUpdateEvent
+  = IOkResponse
+  & IUpdateUserEvent
+  & IUpdateOptionEvent
+  & IUpdateNewChatEvent
+  & IUpdateChatOrderEvent
+  & IUpdateNewMessageEvent
+  & IUpdateSuperGroupEvent
+  & IUpdateChatReadInboxEvent
+  & IUpdateChatLastMessageEvent
+  & IUpdateUnreadChatCountEvent
+  & IUpdateConnectionStateEvent
+  & IUpdateUnreadMessagesCountEvent
+  & IUpdateScopeNotificationSettingsEvent
+  & IUpdateHavePendingNotificationsEvent;
+
+export interface IUpdateUserEvent {
+  '@type': 'updateUser';
+  user: IUser;
+}
+
+export interface IUpdateNewChatEvent {
+  '@type': 'updateNewChat';
+  chat: IChatFullData;
+}
+
+export interface IUpdateChatLastMessageEvent {
+  '@type': 'updateChatLastMessage';
+  chat_id: number;
+  last_message: IMessage;
+}
+
+export interface IUpdateNewMessageEvent {
+  '@type': 'updateNewMessage';
+  message: IMessage;
+}
+
+export interface IUpdateHavePendingNotificationsEvent {
+  '@type': 'updateHavePendingNotifications';
+  have_delayed_notifications: boolean;
+  have_unreceived_notifications: boolean;
+}
+
+export enum ConnectionState {
+  connectionStateConnecting = 'connectionStateConnecting,',
+  connectionStateConnectingToProxy = 'connectionStateConnectingToProxy,',
+  connectionStateReady = 'connectionStateReady,',
+  connectionStateUpdating = 'connectionStateUpdating,',
+  connectionStateWaitingForNetwork = 'connectionStateWaitingForNetwork',
+}
+
+export interface IUpdateConnectionStateEvent {
+  '@type': 'updateConnectionState';
+  state: { '@type': ConnectionState };
+}
+
+export interface IUpdateScopeNotificationSettingsEvent {
+  '@type': 'updateScopeNotificationSettings';
+  scope: { '@type': 'updateScopeNotificationSettings' };
+}
+
+export interface IUpdateUnreadChatCountEvent {
+  '@type': 'updateUnreadChatCount';
+  unread_count: number;
+  unread_unmuted_count: number;
+  marked_as_unread_count: number;
+  marked_as_unread_unmuted_count: number;
+}
+
+export interface IUpdateUnreadMessagesCountEvent {
+  '@type': 'updateUnreadMessageCount';
+  unread_count: number;
+  unread_unmuted_count: number;
+}
+
+export interface IUpdateOptionEvent {
+  '@type': 'updateOption';
+  name: string;
+  value: {
+    '@type': string;
+    value: string | number | boolean;
+  };
+}
+
+export interface IUpdateChatOrderEvent {
+  '@type': 'updateChatOrder';
+  chat_id: number;
+  order: string;
+}
+
+export interface IUpdateSuperGroupEvent {
+  '@type': 'updateSupergroup';
+  supergroup: IChatFullData;
+}
+
+export interface IUpdateChatReadInboxEvent {
+  '@type': 'updateChatReadInbox';
+  chat_id: number;
+  last_read_inbox_message_id: number;
+  unread_count: number;
+}
+
+export interface IUpdatesResponse {
+  '@type': 'updates';
+  updates: IUpdateEvent[];
+}
+
+// version
+// message_caption_length_max
+// test_mode
+// favorite_stickers_limit
+// t_me_url
+// calls_enabled
+// forwarded_message_count_max
+// pinned_chat_count_max
+// basic_group_size_max
+// my_id
+// expect_blocking
+// call_connect_timeout_ms
+// venue_search_bot_username
+// photo_search_bot_username
+// supergroup_size_max
+// call_packet_timeout_ms
+// animation_search_bot_username
+// message_text_length_max
+// authorization_date

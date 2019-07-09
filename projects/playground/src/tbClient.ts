@@ -1,11 +1,16 @@
-import {IChatFullData, IMessage, IMessagesResponse, IUser} from "./tgInterfaces";
-
+import {
+  IChatFullData, IMessage, IMessagesResponse, IOkResponse, IUpdateConnectionStateEvent, IUpdateEvent, IUpdatesResponse,
+  IUser
+} from './tgInterfaces';
 const readline = require('readline');
 import {Injectable} from '@angular/core';
 import {config} from 'dotenv';
+import {Structs} from 'tglib';
+import {Subject} from 'rxjs';
+import {filter} from 'rxjs/internal/operators';
+const { Client } = require('tglib/node');
 
 const env = config().parsed;
-const { Client } = require('tglib/node');
 //
 const makeReadLine = (question): Promise<string> => new Promise(resolve => {
   const rl = readline.createInterface({
@@ -42,18 +47,49 @@ export async function tgClientInit() {
     return await defaultHandler(args);
   });
 
+// register callback for errors
+  client.registerCallback('td:error', (error) => {
+    console.log('[error]', error);
+  });
+
   await client.ready;
 }
 
 @Injectable()
 export class TgClient {
   client = client;
+  options: {[key: string]: number | string | boolean} = {};
+  updates$ = new Subject<IUpdateEvent>();
 
-  async getCharts(): Promise<IChatFullData[]> {
+  constructor() {
+    this.client.registerCallback('td:update', (update: IUpdateEvent) => {
+      this.updates$.next(update);
+    });
+
+    this.updateCurrentState().then(({updates}) => {
+      updates.forEach(update => {
+        this.updates$.next(update);
+      });
+    });
+
+    this.updates$.pipe(filter(update => update['@type'] === 'updateOption'))
+      .subscribe(update => {
+        this.options[update.name] = update.value.value;
+      });
+  }
+
+  async getChats(): Promise<IChatFullData[]> {
     return await client.tg.getAllChats();
   }
 
-  async getMessages(chat: IChatFullData): Promise<IMessage[]> {
+  async sendTextMessage(text: string, chat_id: number): Promise<IChatFullData[]> {
+    return await client.tg.sendTextMessage({
+      $text: new Structs.TextStruct(text, 'textParseModeHTML'),
+      chat_id,
+    });
+  }
+
+  async getMessages(chatId: number): Promise<IMessage[]> {
     const limit = 10;
     const allMessages = new Map<string, IMessage>();
     let triesLeft = 9;
@@ -61,7 +97,7 @@ export class TgClient {
     while (allMessages.size < limit || triesLeft--) {
       const currentChunk = await client.fetch({
         '@type': 'getChatHistory',
-        chat_id: chat.id,
+        chat_id: chatId,
         offset: -limit * triesLeft,
         limit: 100,
       });
@@ -74,8 +110,28 @@ export class TgClient {
     return [...allMessages.values()];
   }
 
+  async openChat(chatId: number): Promise<IOkResponse> {
+    return await client.fetch({
+      '@type': 'openChat',
+      chat_id: chatId,
+    });
+  }
+
+  async closeChat(chatId: number): Promise<IOkResponse> {
+    return await client.fetch({
+      '@type': 'closeChat',
+      chat_id: chatId,
+    });
+  }
+
+  async updateCurrentState(): Promise<IUpdatesResponse> {
+    return await client.fetch({
+      '@type': 'getCurrentState',
+    });
+  }
+
   async getMessagesAuthors(messages: IMessage[]): Promise<IUser[]> {
-    const userIds = new Set<number>(messages.map(m => m.sender_user_id));
+    const userIds = new Set<number>(messages.map(m => m.sender_user_id).filter(Number));
 
     const promises = [...userIds].map(userId => {
       return client.fetch({
@@ -86,13 +142,4 @@ export class TgClient {
 
     return await Promise.all(promises);
   }
-
-  // async getDialogs(): Promise<IMessagesResponse> {
-  //   return await client.fetch({
-  //     '@type': 'getDialogs',
-  //     limit: 100,
-  //     offset_date: (new Date(2019, 4, 1)).getTime(),
-  //     offset_id: 0,
-  //   });
-  // }
 }
