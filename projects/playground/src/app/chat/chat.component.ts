@@ -106,7 +106,7 @@ export class ChatComponent implements OnInit {
   }
 
   private formatDate(timestamp: number): string {
-    const date = new Date(Date.now() - timestamp);
+    const date = new Date(timestamp * 1000);
     const parts = [
       date.getHours(),
       date.getMinutes()
