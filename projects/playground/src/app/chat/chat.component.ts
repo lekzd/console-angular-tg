@@ -20,7 +20,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [bottom]="2"
       [width]="appService.messagesColSpan$ | async"
       [label]="title$ | async"
-      selectedFg="white-fg"
+      selectedFg="black"
       selectedBg="#007700"
       [keys]="true"
       [tags]="true"
@@ -94,9 +94,13 @@ export class ChatComponent implements OnInit {
 
       const [user] = await this.tgClient.getMessagesAuthors([newMessage]);
       const list = this.appService.chatRef.element;
+      const strings = this.getMessageStrings(newMessage, user);
 
-      list.addItem(this.getMessagesString(newMessage, user));
-      list.down(1);
+      strings.forEach(item => {
+        list.addItem(item);
+      });
+
+      list.down(strings.length);
       list.render();
     });
   }
@@ -120,6 +124,10 @@ export class ChatComponent implements OnInit {
       return `{#767676-fg}${user.first_name} ${user.last_name}{/}`;
     }
 
+    if (user.first_name) {
+      return `{#767676-fg}${user.first_name}{/}`;
+    }
+
     if (user.username) {
       return `{#767676-fg}@${user.username}{/}`;
     }
@@ -127,44 +135,96 @@ export class ChatComponent implements OnInit {
     return `{#767676-fg}[unknown user]{/}`;
   }
 
-  private getMessagesString(message: IMessage, user: IUser | undefined): string {
+  private getMessageFirstString(message: IMessage, user: IUser | undefined): string {
     switch (message.content['@type']) {
       case 'messageText':
-        return `${this.formatDate(message.date)} ${this.formatUser(user)}: ${message.content.text.text}`;
+        return `${this.formatDate(message.date)} ${this.formatUser(user)}`;
       case 'messageSticker':
         return `${this.formatDate(message.date)} ${this.formatUser(user)}: {#767676-fg}[sticker ${message.content.sticker.emoji} ]{/}`;
+      case 'messageChatAddMembers':
+        return `${this.formatDate(message.date)} ${this.formatUser(user)} {#767676-fg}joined chat{/}`;
+      case 'messageChatJoinByLink':
+        return `${this.formatDate(message.date)} ${this.formatUser(user)} {#767676-fg}joined by invite link{/}`;
       default:
         return `${this.formatDate(message.date)} ${this.formatUser(user)}: {#767676-fg}[${message.content['@type']}]{/}`;
     }
+  }
+
+  private wordWrappedFormattedTextStrings(text: string): string[] {
+    const strings = [];
+    const max = 60;
+    let end = 0;
+    let counter = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      if (text === '↵') {
+        strings.push(text.substring(end, i).trim());
+        end = i + 1;
+        counter = 0;
+
+        continue;
+      }
+
+      if (counter >= max) {
+        strings.push(text.substring(end, i).trim());
+        end = i;
+        counter = 0;
+
+        continue;
+      }
+
+      counter++;
+    }
+
+    strings.push(text.substring(end).trim());
+
+    return strings;
+  }
+
+  private getMessageContentString(message: IMessage, user: IUser | undefined): string[] | null {
+    switch (message.content['@type']) {
+      case 'messageText':
+        return this.wordWrappedFormattedTextStrings(message.content.text.text);
+      default:
+        return null;
+    }
+  }
+
+  private getMessageStrings(message: IMessage, author: IUser | undefined): string[] {
+    const result = [];
+
+    const first = this.getMessageFirstString(message, author);
+    const rest = this.getMessageContentString(message, author);
+
+    result.push(first);
+
+    if (rest) {
+      result.push(...rest);
+    }
+
+    return result;
   }
 
   private async openSelectedChat() {
     if (this.selectedChat$.value) {
       const messages = await this.conversationsService.loadConversationMessages(this.selectedChat$.value.id);
       const users = await this.tgClient.getMessagesAuthors(messages);
+      const strings = [];
 
-      const strings = messages.map(message => {
-        return this.getMessagesString(message, users.find(user => user.id === message.sender_user_id));
+      messages.forEach(message => {
+        const author = users.find(user => user.id === message.sender_user_id);
+
+        strings.push(...this.getMessageStrings(message, author));
       });
 
-      // const [lastAuthor] = await this.tgClient.getMessagesAuthors([this.selectedChat$.value.last_message]);
-      // this.messages$.next([
-      //   '...loading...',
-      //   ...(await this.conversationsService.loadConversationMessages(this.selectedChat$.value.id))
-      // ]);
-      //
-      // const messages = await this.tgClient.getMessages(this.selectedChat$.value.id);
-      // const users = await this.tgClient.getMessagesAuthors(messages);
-      // const strings = messages.reverse().map(message => {
-      //   return this.getMessagesString(message, users.find(user => user.id === message.sender_user_id));
-      // });
-
-      const list = this.appService.chatRef.element;
-
-      list.select(strings.length - 1);
-      list.scrollTo(strings.length);
-
       this.messages$.next(strings);
+
+      setTimeout(() => {
+        const list = this.appService.chatRef.element;
+
+        list.select(strings.length - 1);
+        list.scrollTo(strings.length);
+      });
     }
   }
 }

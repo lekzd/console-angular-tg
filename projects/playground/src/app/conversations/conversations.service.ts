@@ -8,13 +8,20 @@ import {debounceTime, filter} from 'rxjs/internal/operators';
 export class ConversationsService {
   storage = new Map<number, IMessage[]>();
   all$ = new BehaviorSubject<IChatFullData[]>([]);
-  mutateChatList$ = new Subject<IChatFullData[]>();
+  mutateChatList$ = new BehaviorSubject<IChatFullData[]>([]);
 
   constructor(private tgClient: TgClient) {
     this.tgClient.updates$
       .pipe(filter(update => update['@type'] === 'updateChatLastMessage' && !!update.last_message))
       .subscribe(({chat_id, last_message}) => {
         this.tryAddMessageToStorage(chat_id, last_message);
+        this.changeChatLastMessage(chat_id, last_message);
+      });
+
+    this.tgClient.updates$
+      .pipe(filter(update => update['@type'] === 'updateChatOrder'))
+      .subscribe(({chat_id, order}) => {
+        this.changeChatOrder(chat_id, order);
       });
 
     this.tgClient.updates$
@@ -26,16 +33,7 @@ export class ConversationsService {
     this.tgClient.updates$
       .pipe(filter(update => update['@type'] === 'updateChatReadInbox'))
       .subscribe(({chat_id, unread_count, last_read_inbox_message_id}) => {
-        const chatToUpdate = this.all$.value.find(chat => chat.id === chat_id);
-
-        if (!chatToUpdate) {
-          return;
-        }
-
-        chatToUpdate.last_read_inbox_message_id = last_read_inbox_message_id;
-        chatToUpdate.unread_count = unread_count;
-
-        this.mutateChatList$.next([...this.all$.value]);
+        this.changeChatUnreadCount(chat_id, unread_count, last_read_inbox_message_id);
       });
 
     this.all$.subscribe(chats => {
@@ -53,6 +51,43 @@ export class ConversationsService {
       .subscribe(chats => {
         this.all$.next(chats);
       });
+  }
+
+  private changeChatUnreadCount(chat_id: number, unread_count: number, last_read_inbox_message_id: number) {
+    const chatToUpdate = this.all$.value.find(chat => chat.id === chat_id);
+
+    if (!chatToUpdate) {
+      return;
+    }
+
+    chatToUpdate.last_read_inbox_message_id = last_read_inbox_message_id;
+    chatToUpdate.unread_count = unread_count;
+
+    this.mutateChatList$.next([...this.all$.value]);
+  }
+
+  private changeChatLastMessage(chat_id: number, last_message: IMessage) {
+    const chatToUpdate = this.all$.value.find(chat => chat.id === chat_id);
+
+    if (!chatToUpdate) {
+      return;
+    }
+
+    chatToUpdate.last_message = last_message;
+
+    this.all$.next([...this.all$.value].sort((a, b) => a.last_message.date < b.last_message.date ? 1 : -1));
+  }
+
+  private changeChatOrder(chat_id: number, order: string) {
+    const chatToUpdate = this.all$.value.find(chat => chat.id === chat_id);
+
+    if (!chatToUpdate) {
+      return;
+    }
+
+    chatToUpdate.order = order;
+
+    this.mutateChatList$.next([...this.all$.value].sort((a, b) => a.order < b.order ? 1 : -1));
   }
 
   private tryAddMessageToStorage(chatId: number, newMessage: IMessage) {
@@ -83,7 +118,7 @@ export class ConversationsService {
     const cachedMessages = this.storage.get(chatId);
 
     if (cachedMessages.length < 50) {
-      return this.tgClient.getMessages(chatId)
+      await this.tgClient.getMessages(chatId)
         .then(messages => {
           messages.forEach(message => {
             this.tryAddMessageToStorage(chatId, message);
@@ -91,6 +126,8 @@ export class ConversationsService {
 
           return messages;
         });
+
+      return this.storage.get(chatId);
     }
 
     return cachedMessages;

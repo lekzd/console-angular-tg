@@ -8,14 +8,6 @@ import {filter, map} from 'rxjs/internal/operators';
 export class ChatService {
   current$ = new BehaviorSubject<IChatFullData>(null);
 
-  get chatLastMessageUpdate$(): Observable<IMessage> {
-    return this.tgClient.updates$.pipe(
-      filter(() => !!this.current$.value),
-      filter(update => update['@type'] === 'updateChatLastMessage'),
-      map(update => update.last_message),
-    );
-  }
-
   get newMessageUpdate$(): Observable<IMessage> {
     return this.tgClient.updates$.pipe(
       filter(() => !!this.current$.value),

@@ -19,7 +19,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [bottom]="2"
       [width]="appService.listColSpan$ | async"
       label="Chats"
-      selectedFg="white-fg"
+      selectedFg="black"
       selectedBg="#007700"
       [keys]="true"
       [tags]="true"
@@ -68,9 +68,11 @@ export class ConversationsComponent implements OnInit {
     this.conversationsService.all$.subscribe(chatsData => {
       this.chats$.next(this.generateTable(chatsData));
 
-      if (this.appService.listRef && this.appService.listRef.element) {
-        this.appService.listRef.element.render();
-      }
+      setTimeout(() => {
+        if (this.appService.listRef && this.appService.listRef.element) {
+          this.appService.listRef.element.screen.render();
+        }
+      });
     });
     //
     // merge(

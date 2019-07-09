@@ -8,6 +8,7 @@ import {config} from 'dotenv';
 import {Structs} from 'tglib';
 import {Subject} from 'rxjs';
 import {filter} from 'rxjs/internal/operators';
+import * as path from 'path';
 const { Client } = require('tglib/node');
 
 const env = config().parsed;
@@ -70,7 +71,7 @@ export class TgClient {
       updates.forEach(update => {
         this.updates$.next(update);
       });
-    });
+    }, () => {});
 
     this.updates$.pipe(filter(update => update['@type'] === 'updateOption'))
       .subscribe(update => {
