@@ -50,15 +50,6 @@ export class AppComponent implements OnInit {
 
   updatesCount = 0;
 
-  connectionState$ = merge(
-    this.tgClient.updates$
-      .pipe(
-        // filter(event => event['@type'] === 'updateConnectionState')
-        map(() => (this.updatesCount++).toString())
-      )
-  // ).pipe(map(event => event['@type']));
-  );
-
   style = {
     fg: 'white',
     bg: 'green',
@@ -81,6 +72,11 @@ export class AppComponent implements OnInit {
       fg: 'grey',
       bg: 'black-bg',
     },
+  };
+
+  blockStyle = {
+    transparent: true,
+    ...this.elementStyle,
   };
 
   @ViewChild('textBox', {static: true})
@@ -112,9 +108,11 @@ export class AppComponent implements OnInit {
       });
 
     // this.tgClient.updates$.pipe(
-    //   filter(event => event['@type'] === 'updateChatLastMessage')
+    //   filter(event => event['@type'] === 'updateConnectionState')
     // ).subscribe(update => {
-    //   debugger;
+    //   if (update["@type"] === 'updateConnectionState') {
+    //     console.log(update.state["@type"]);
+    //   }
     // });
 
     setTimeout(() => {

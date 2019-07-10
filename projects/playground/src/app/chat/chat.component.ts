@@ -22,6 +22,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [label]="title$ | async"
       selectedFg="black"
       selectedBg="#007700"
+      [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
       [tags]="true"
       #messagesList
@@ -112,41 +113,55 @@ export class ChatComponent implements OnInit {
       date.getMinutes()
     ].map(s => (s.toString() as any).padStart(2, '0'));
 
-    return `{#767676-fg}${parts.join(':')}{/}`;
+    return `{#008080-fg}${parts.join(':')}{/}`;
   }
 
-  private formatUser(user: IUser | undefined): string {
+  private formatUser(user: IUser | undefined, nameColor: string): string {
     if (user === undefined) {
-      return `{#767676-fg}[bot]{/}`;
+      // in channels, authors goes without user ID
+      return ``;
+    }
+
+    if (user.username && user.first_name && user.last_name) {
+      return `{#0087d7-fg}@${user.username}{/} {${nameColor}}${user.first_name} ${user.last_name}{/}`;
     }
 
     if (user.first_name && user.last_name) {
-      return `{#767676-fg}${user.first_name} ${user.last_name}{/}`;
+      return `{${nameColor}}${user.first_name} ${user.last_name}{/}`;
+    }
+
+    if (user.username && user.first_name) {
+      return `{#0087d7-fg}@${user.username}{/} {${nameColor}}${user.first_name}{/}`;
     }
 
     if (user.first_name) {
-      return `{#767676-fg}${user.first_name}{/}`;
+      return `{${nameColor}}${user.first_name}{/}`;
     }
 
     if (user.username) {
-      return `{#767676-fg}@${user.username}{/}`;
+      return `{#0087d7-fg}@${user.username}{/}`;
     }
 
-    return `{#767676-fg}[unknown user]{/}`;
+    return `{${nameColor}}[unknown user]{/}`;
   }
 
   private getMessageFirstString(message: IMessage, user: IUser | undefined): string {
+    const nameColor = message.is_outgoing ? `#00ff00-fg` : `#af005f-fg`;
+    const direction = message.is_outgoing ? `{${nameColor}}{bold}➜{/}{/}` : `{${nameColor}}{bold}←{/}{/}`;
+
     switch (message.content['@type']) {
       case 'messageText':
-        return `${this.formatDate(message.date)} ${this.formatUser(user)}`;
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}`;
       case 'messageSticker':
-        return `${this.formatDate(message.date)} ${this.formatUser(user)}: {#767676-fg}[sticker ${message.content.sticker.emoji} ]{/}`;
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[sticker ${message.content.sticker.emoji} ]{/}`;
+      case 'messageAnimation':
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[animation ${message.content.caption.text || message.content.animation.file_name}]{/}`;
       case 'messageChatAddMembers':
-        return `${this.formatDate(message.date)} ${this.formatUser(user)} {#767676-fg}joined chat{/}`;
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}joined chat{/}`;
       case 'messageChatJoinByLink':
-        return `${this.formatDate(message.date)} ${this.formatUser(user)} {#767676-fg}joined by invite link{/}`;
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}joined by invite link{/}`;
       default:
-        return `${this.formatDate(message.date)} ${this.formatUser(user)}: {#767676-fg}[${message.content['@type']}]{/}`;
+        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[${message.content['@type']}]{/}`;
     }
   }
 

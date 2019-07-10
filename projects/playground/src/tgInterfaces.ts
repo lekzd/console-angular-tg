@@ -1,12 +1,20 @@
 
-type IMessageContent = IMessageTextContent & IMessageStickerContent;
+type IMessageContent = IMessageTextContent & IMessageStickerContent & IMessageAnimationContent;
+
+interface IMessageFormattedText {
+  '@type': 'formattedText';
+  text: string;
+}
 
 export interface IMessageTextContent {
   '@type': 'messageText';
-  text: {
-    '@type': 'formattedText';
-    text: string;
-  };
+  text: IMessageFormattedText;
+}
+
+export interface IMessageAnimationContent {
+  '@type': 'messageAnimation';
+  caption: IMessageFormattedText;
+  animation: any;
 }
 
 export interface IMessageStickerContent {

@@ -1,10 +1,11 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {TgClient} from '../../tbClient';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, merge} from 'rxjs';
 import {Widgets} from 'blessed';
 import {IChatFullData} from '../../tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from './conversations.service';
+import { filter, map } from 'rxjs/operators';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -18,7 +19,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [left]="0"
       [bottom]="2"
       [width]="appService.listColSpan$ | async"
-      label="Chats"
+      [label]="connectionState$ | async"
       selectedFg="black"
       selectedBg="#007700"
       [keys]="true"
@@ -34,6 +35,14 @@ type IElementRef<T> = ElementRef<{element: T}>;
 export class ConversationsComponent implements OnInit {
 
   chats$ = new BehaviorSubject<string[]>([]);
+
+  connectionState$ = merge(
+    this.tgClient.updates$
+      .pipe(
+        filter(event => event['@type'] === 'updateConnectionState'),
+        map(event => event['@type']),
+      )
+  );
 
   elementStyle = {
     bg: 'black-bg',
