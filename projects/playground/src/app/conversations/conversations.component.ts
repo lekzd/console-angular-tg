@@ -15,13 +15,10 @@ type IElementRef<T> = ElementRef<{element: T}>;
     <list
       border="line"
       [scrollbar]="true"
-      [top]="0"
-      [left]="0"
-      [bottom]="2"
-      [width]="appService.listColSpan$ | async"
       [label]="connectionState$ | async"
       selectedFg="black"
       selectedBg="#007700"
+      [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
       [tags]="true"
       #list
@@ -45,16 +42,14 @@ export class ConversationsComponent implements OnInit {
   );
 
   elementStyle = {
-    bg: 'black-bg',
+    fg: 'white',
     focus: {
       border: {
         fg: 'blue',
-        bg: 'black-bg',
       },
     },
     border: {
-      fg: 'blue',
-      bg: 'black-bg',
+      fg: 'grey',
     },
     scrollbar: {
       bg: 'blue',

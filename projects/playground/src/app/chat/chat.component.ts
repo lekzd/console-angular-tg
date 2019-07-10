@@ -15,10 +15,6 @@ type IElementRef<T> = ElementRef<{element: T}>;
     <list
       border="line"
       [scrollbar]="true"
-      [top]="0"
-      [left]="appService.listColSpan$ | async"
-      [bottom]="2"
-      [width]="appService.messagesColSpan$ | async"
       [label]="title$ | async"
       selectedFg="black"
       selectedBg="#007700"
@@ -39,16 +35,14 @@ export class ChatComponent implements OnInit {
   title$ = new BehaviorSubject<string>('<--Выберите чат');
 
   elementStyle = {
-    bg: 'black-bg',
+    fg: 'white',
     focus: {
       border: {
         fg: 'blue',
-        bg: 'black-bg',
       },
     },
     border: {
       fg: 'grey',
-      bg: 'black-bg',
     },
     scrollbar: {
       bg: 'blue',

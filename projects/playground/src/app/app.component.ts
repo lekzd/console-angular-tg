@@ -13,8 +13,22 @@ type IElementRef<T> = ElementRef<{element: T}>;
 @Component({
   selector: 'pl-root',
   template: `
-    <pl-conversations [style]="{transparent: true}"></pl-conversations>
-    <pl-chat [style]="{transparent: true}"></pl-chat>
+    <pl-conversations 
+      [style]="{transparent: true}"
+      [top]="0"
+      [left]="0"
+      [bottom]="2"
+      [width]="appService.listColSpan$ | async"
+      >
+    </pl-conversations>
+    <pl-chat 
+      [style]="{transparent: true}"
+      [top]="0"
+      [left]="appService.listColSpan$ | async"
+      [bottom]="2"
+      [width]="appService.messagesColSpan$ | async"
+    >
+    </pl-chat>
 
     <textbox
       border="line"
