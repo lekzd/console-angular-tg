@@ -98,7 +98,7 @@ export class ConversationsComponent implements OnInit {
     const chats = chatsData.slice(0, 100);
 
     const data = chats.map(chatFull => {
-      const defaultStyle = `{${'#6c6c6c'}-fg}`;
+      const defaultStyle = `{${'gray-fg'}}`;
       const accentStyles = chatFull.unread_count ? `{${'#00afff'}-fg}` : defaultStyle;
       const textStyles = chatFull.unread_count ? `{${'#00ff00'}-fg}` : defaultStyle;
 

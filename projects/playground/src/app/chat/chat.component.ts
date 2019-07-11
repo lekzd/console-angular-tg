@@ -6,7 +6,7 @@ import {IChatFullData, IMessage, IUser} from '../../tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';
-import {multiParagraphWordWrap} from './wordWrap';
+import {multiParagraphWordWrap, escapeFormattingTags} from './textUtils';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -163,7 +163,7 @@ export class ChatComponent implements OnInit {
   private getMessageContentString(message: IMessage, user: IUser | undefined): string[] | null {
     switch (message.content['@type']) {
       case 'messageText':
-        return multiParagraphWordWrap(message.content.text.text, 50, '\n');
+        return multiParagraphWordWrap(escapeFormattingTags(message.content.text.text), 50, '\n');
       default:
         return null;
     }

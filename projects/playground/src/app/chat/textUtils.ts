@@ -24,3 +24,7 @@ export function multiParagraphWordWrap(str, width, delimiter) {
 
   return arr.reduce((acc, val) => acc.concat(val), []);
 }
+
+export function escapeFormattingTags(text: string): string {
+  return text.replace(/\{/g, '⎨').replace(/\}/g, '');
+}
