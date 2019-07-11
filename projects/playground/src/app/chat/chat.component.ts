@@ -6,6 +6,7 @@ import {IChatFullData, IMessage, IUser} from '../../tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';
+import {multiParagraphWordWrap} from './wordWrap';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -159,41 +160,10 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  private wordWrappedFormattedTextStrings(text: string): string[] {
-    const strings = [];
-    const max = 60;
-    let end = 0;
-    let counter = 0;
-
-    for (let i = 0; i < text.length; i++) {
-      if (text === '↵') {
-        strings.push(text.substring(end, i).trim());
-        end = i + 1;
-        counter = 0;
-
-        continue;
-      }
-
-      if (counter >= max) {
-        strings.push(text.substring(end, i).trim());
-        end = i;
-        counter = 0;
-
-        continue;
-      }
-
-      counter++;
-    }
-
-    strings.push(text.substring(end).trim());
-
-    return strings;
-  }
-
   private getMessageContentString(message: IMessage, user: IUser | undefined): string[] | null {
     switch (message.content['@type']) {
       case 'messageText':
-        return this.wordWrappedFormattedTextStrings(message.content.text.text);
+        return multiParagraphWordWrap(message.content.text.text, 50, '\n');
       default:
         return null;
     }
