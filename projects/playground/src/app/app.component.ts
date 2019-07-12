@@ -11,7 +11,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
 @Component({
   selector: 'pl-root',
   template: `
-    <pl-conversations 
+    <pl-conversations
       [style]="{transparent: true}"
       [top]="0"
       [left]="0"
@@ -19,7 +19,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [width]="appService.listColSpan$ | async"
       >
     </pl-conversations>
-    <pl-chat 
+    <pl-chat
       [style]="{transparent: true}"
       [top]="0"
       [left]="appService.listColSpan$ | async"
@@ -28,21 +28,13 @@ type IElementRef<T> = ElementRef<{element: T}>;
     >
     </pl-chat>
 
-    <textbox
-      border="line"
+    <pl-input
       [left]="0"
       [bottom]="0"
       [right]="20"
       [height]="3"
-      [padding]="{left: 1}"
-      [inputOnFocus]="true"
-      [keys]="true"
-      [mouse]="true"
-      (submit)="onSubmit($event)"
-      #textBox
-      [style]="elementStyle"
     >
-    </textbox>
+    </pl-input>
 
     <box [bottom]="0"
          [right]="0"
@@ -69,27 +61,6 @@ export class AppComponent implements OnInit {
       fg: 'red',
     },
   };
-
-  elementStyle = {
-    bg: 'black-bg',
-    fg: 'grey',
-    focus: {
-      fg: 'white',
-      border: {
-        fg: 'blue',
-        bg: 'black-bg',
-      },
-    },
-    border: {
-      fg: 'grey',
-      bg: 'black-bg',
-    },
-  };
-
-  @ViewChild('textBox', {static: true})
-  set setInputElement(ref: IElementRef<Widgets.TextboxElement>) {
-    this.appService.inputRef = ref.nativeElement;
-  }
 
   private selectedIndex = 0;
 
@@ -174,20 +145,5 @@ export class AppComponent implements OnInit {
           this.input$.next('');
         }
       });
-
-    // this.tgClient.getDialogs().then(data => {
-    //
-    //   debugger;
-    // });
-  }
-
-  onSubmit(event) {
-    if (this.chatService.current$.value) {
-      this.tgClient.sendTextMessage(event, this.chatService.current$.value.id)
-        .then(() => {
-          this.appService.inputRef.element.clearValue();
-          this.appService.reRender();
-        });
-    }
   }
 }

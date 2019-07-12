@@ -1,14 +1,14 @@
 
-type IMessageContent 
-  = IMessageTextContent 
-  | IMessageStickerContent 
-  | IMessageAnimationContent 
-  | IMessageContentChatAddMembers 
-  | IMessageContentChatJoinByLink 
-  | IMessageDocumentContent 
-  | IMessageAudioContent 
-  | IMessagePhotoContent 
-  | IMessageVideoContent 
+type IMessageContent
+  = IMessageTextContent
+  | IMessageStickerContent
+  | IMessageAnimationContent
+  | IMessageContentChatAddMembers
+  | IMessageContentChatJoinByLink
+  | IMessageDocumentContent
+  | IMessageAudioContent
+  | IMessagePhotoContent
+  | IMessageVideoContent
   | IMessagePollContent;
 
 interface IMessageFormattedText {
@@ -41,7 +41,7 @@ export interface IMessageContentChatAddMembers {
 export interface IMessageContentChatJoinByLink {
   '@type': 'messageChatJoinByLink';
 }
-  
+
 export interface IMessagePollContent {
   '@type': 'messagePoll';
   poll: IPoll;
@@ -150,7 +150,7 @@ export interface IChatFullData {
   id: number;
   type: IChatType;
   title: string;
-  photo: any;
+  photo: IFile;
   last_message: IMessage;
   order: string;
   is_pinned: boolean;

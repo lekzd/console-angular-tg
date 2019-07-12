@@ -115,7 +115,7 @@ export class ConversationsService {
   }
 
   async loadConversationMessages(chatId: number): Promise<IMessage[]> {
-    const cachedMessages = this.storage.get(chatId);
+    const cachedMessages = this.storage.get(chatId) || [];
 
     if (cachedMessages.length < 50) {
       await this.tgClient.getMessages(chatId)

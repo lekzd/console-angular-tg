@@ -10,11 +10,13 @@ import {ConversationsComponent} from './conversations/conversations.component';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
 import {UsersService} from './chat/users.service';
+import { InputComponent } from './input/input.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChatComponent,
+    InputComponent,
     ConversationsComponent,
   ],
   imports: [
