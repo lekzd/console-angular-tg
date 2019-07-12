@@ -1,12 +1,8 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
-import {TgClient} from '../tbClient';
 import {BehaviorSubject, merge, Subject} from 'rxjs';
-import {Widgets} from 'blessed';
 import {AppService} from './app.service';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
-
-type IElementRef<T> = ElementRef<{element: T}>;
 
 @Component({
   selector: 'pl-root',
@@ -65,7 +61,6 @@ export class AppComponent implements OnInit {
   private selectedIndex = 0;
 
   constructor(
-    private tgClient: TgClient,
     private renderer2: Renderer2,
     public appService: AppService,
     public chatService: ChatService,
