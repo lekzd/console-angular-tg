@@ -66,7 +66,7 @@ export class ChatComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.chatService.current$.subscribe((chat: IChatFullData) => {
+    this.chatService.current$.subscribe(async (chat: IChatFullData) => {
       if (!chat) {
         return;
       }
@@ -76,7 +76,8 @@ export class ChatComponent implements OnInit {
       }
 
       this.selectedChat$.next(chat);
-      this.tgClient.openChat(chat.id);
+      await this.tgClient.openChat(chat.id);
+      // this.tgClient.readAllChatMentions(chat.id);
       this.openSelectedChat();
       this.title$.next(chat.title);
 
@@ -147,6 +148,8 @@ export class ChatComponent implements OnInit {
     switch (message.content['@type']) {
       case 'messageText':
         return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}`;
+      case 'messagePoll':
+          return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}poll:{/}`;
       case 'messageSticker':
         return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[sticker ${message.content.sticker.emoji} ]{/}`;
       case 'messageAnimation':
@@ -164,6 +167,16 @@ export class ChatComponent implements OnInit {
     switch (message.content['@type']) {
       case 'messageText':
         return multiParagraphWordWrap(escapeFormattingTags(message.content.text.text), 50, '\n');
+      case 'messagePhoto':
+      case 'messageVideo':
+      case 'messageAnimaton':
+      case 'messageAudio':
+      case 'messageDocument':
+        return multiParagraphWordWrap(escapeFormattingTags(message.content.caption.text), 50, '\n');
+      case 'messagePoll':
+        const question = multiParagraphWordWrap(escapeFormattingTags(message.content.poll.question), 50, '\n');
+
+        return [...question, ...message.content.poll.options.map(option => `${option.text}: ${option.vote_percentage}%`)]
       default:
         return null;
     }
@@ -184,26 +197,50 @@ export class ChatComponent implements OnInit {
     return result;
   }
 
-  private async openSelectedChat() {
-    if (this.selectedChat$.value) {
-      const messages = await this.conversationsService.loadConversationMessages(this.selectedChat$.value.id);
-      const users = await this.tgClient.getMessagesAuthors(messages);
-      const strings = [];
+  private async readSelectedChatMessages(messages: IMessage[]) {
+    const chat = this.selectedChat$.value;
+    const messageIds = [];
 
-      messages.forEach(message => {
-        const author = users.find(user => user.id === message.sender_user_id);
-
-        strings.push(...this.getMessageStrings(message, author));
-      });
-
-      this.messages$.next(strings);
-
-      setTimeout(() => {
-        const list = this.appService.chatRef.element;
-
-        list.select(strings.length - 1);
-        list.scrollTo(strings.length);
-      });
+    if (!chat) {
+      return;
     }
+
+    for (let i = messages.length - 1; i > 0; i--) {
+      messageIds.push(messages[i].id);
+
+      if (chat.last_read_inbox_message_id === messages[i].id) {
+        break;
+      }
+    }
+
+    await this.tgClient.readChatMessages(chat.id, messageIds);
+  }
+
+  private async openSelectedChat() {
+    const chat = this.selectedChat$.value;
+
+    if (!chat) {
+      return;
+    }
+  
+    const messages = await this.conversationsService.loadConversationMessages(chat.id);
+    const users = await this.tgClient.getMessagesAuthors(messages);
+    const strings = [];
+
+    messages.forEach(message => {
+      const author = users.find(user => user.id === message.sender_user_id);
+
+      strings.push(...this.getMessageStrings(message, author));
+    });
+
+    this.messages$.next(strings);
+    this.readSelectedChatMessages(messages);
+
+    setTimeout(() => {
+      const list = this.appService.chatRef.element;
+
+      list.select(strings.length - 1);
+      list.scrollTo(strings.length);
+    });
   }
 }

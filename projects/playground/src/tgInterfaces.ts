@@ -1,14 +1,43 @@
 
-type IMessageContent = IMessageTextContent & IMessageStickerContent & IMessageAnimationContent;
+type IMessageContent = IMessageTextContent & IMessageStickerContent & IMessageAnimationContent & IMessagePhotoContent & IMessagePollContent;
 
 interface IMessageFormattedText {
   '@type': 'formattedText';
   text: string;
 }
 
+interface IPollOption {
+  '@type': 'pollOption',
+  text: string;
+  voter_count: number;
+  vote_percentage: number;
+  is_chosen: boolean;
+  is_being_chosen: boolean;
+}
+
+export interface IPoll {
+  '@type': 'poll',
+  id: number;
+  question: string;
+  options: IPollOption[];
+  total_voter_count: number;
+  is_closed: boolean;
+}
+
+export interface IMessagePollContent {
+  '@type': 'messagePoll';
+  poll: IPoll;
+}
+
 export interface IMessageTextContent {
   '@type': 'messageText';
   text: IMessageFormattedText;
+}
+
+export interface IMessagePhotoContent {
+  '@type': 'messagePhoto';
+  caption: IMessageFormattedText;
+  photo: any;
 }
 
 export interface IMessageAnimationContent {

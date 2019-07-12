@@ -118,6 +118,22 @@ export class TgClient {
     });
   }
 
+  async readChatMessages(chatId: number, messagesIds: number[]): Promise<IOkResponse> {
+    return await client.fetch({
+      '@type': 'viewMessages',
+      chat_id: chatId,
+      message_ids: messagesIds,
+      force_read: false,
+    });
+  }
+
+  async readAllChatMentions(chatId: number): Promise<IOkResponse> {
+    return await client.fetch({
+      '@type': 'readAllChatMentions',
+      chat_id: chatId,
+    });
+  }
+
   async closeChat(chatId: number): Promise<IOkResponse> {
     return await client.fetch({
       '@type': 'closeChat',
