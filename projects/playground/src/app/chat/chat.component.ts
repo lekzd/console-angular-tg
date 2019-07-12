@@ -169,7 +169,7 @@ export class ChatComponent implements OnInit {
         return multiParagraphWordWrap(escapeFormattingTags(message.content.text.text), 50, '\n');
       case 'messagePhoto':
       case 'messageVideo':
-      case 'messageAnimaton':
+      case 'messageAnimation':
       case 'messageAudio':
       case 'messageDocument':
         return multiParagraphWordWrap(escapeFormattingTags(message.content.caption.text), 50, '\n');

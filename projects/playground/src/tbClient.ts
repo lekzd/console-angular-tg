@@ -1,6 +1,7 @@
 import {
   IChatFullData, IMessage, IMessagesResponse, IOkResponse, IUpdateConnectionStateEvent, IUpdateEvent, IUpdatesResponse,
-  IUser
+  IUser,
+  IUpdateOptionEvent
 } from './tgInterfaces';
 const readline = require('readline');
 import {Injectable} from '@angular/core';
@@ -67,13 +68,15 @@ export class TgClient {
       this.updates$.next(update);
     });
 
+    this.setOption('online', true);
+
     this.updateCurrentState().then(({updates}) => {
       updates.forEach(update => {
         this.updates$.next(update);
       });
     }, () => {});
 
-    this.updates$.pipe(filter(update => update['@type'] === 'updateOption'))
+    this.updates$.pipe(filter<IUpdateOptionEvent>(update => update['@type'] === 'updateOption'))
       .subscribe(update => {
         this.options[update.name] = update.value.value;
       });
@@ -131,6 +134,17 @@ export class TgClient {
     return await client.fetch({
       '@type': 'readAllChatMentions',
       chat_id: chatId,
+    });
+  }
+
+  async setOption(name: string, value: number | string | boolean): Promise<IOkResponse> {
+    return await client.fetch({
+      '@type': 'setOption',
+      name,
+      value: {
+        '@type': 'optionValueBoolean',
+        value,
+      },
     });
   }
 

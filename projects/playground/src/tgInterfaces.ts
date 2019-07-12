@@ -1,5 +1,15 @@
 
-type IMessageContent = IMessageTextContent & IMessageStickerContent & IMessageAnimationContent & IMessagePhotoContent & IMessagePollContent;
+type IMessageContent 
+  = IMessageTextContent 
+  | IMessageStickerContent 
+  | IMessageAnimationContent 
+  | IMessageContentChatAddMembers 
+  | IMessageContentChatJoinByLink 
+  | IMessageDocumentContent 
+  | IMessageAudioContent 
+  | IMessagePhotoContent 
+  | IMessageVideoContent 
+  | IMessagePollContent;
 
 interface IMessageFormattedText {
   '@type': 'formattedText';
@@ -24,6 +34,14 @@ export interface IPoll {
   is_closed: boolean;
 }
 
+export interface IMessageContentChatAddMembers {
+  '@type': 'messageChatAddMembers';
+}
+
+export interface IMessageContentChatJoinByLink {
+  '@type': 'messageChatJoinByLink';
+}
+  
 export interface IMessagePollContent {
   '@type': 'messagePoll';
   poll: IPoll;
@@ -40,10 +58,28 @@ export interface IMessagePhotoContent {
   photo: any;
 }
 
+export interface IMessageVideoContent {
+  '@type': 'messageVideo';
+  caption: IMessageFormattedText;
+  video: any;
+}
+
 export interface IMessageAnimationContent {
   '@type': 'messageAnimation';
   caption: IMessageFormattedText;
   animation: any;
+}
+
+export interface IMessageAudioContent {
+  '@type': 'messageAudio';
+  caption: IMessageFormattedText;
+  audio: any;
+}
+
+export interface IMessageDocumentContent {
+  '@type': 'messageDocument';
+  caption: IMessageFormattedText;
+  document: any;
 }
 
 export interface IMessageStickerContent {
@@ -134,85 +170,64 @@ export interface IChatFullData {
   client_data: string;
 }
 
+interface IFile {
+  '@type': 'file';
+  id: number;
+  size: number;
+  expected_size: number;
+  local: {
+    '@type': 'localFile';
+    path: string;
+    can_be_downloaded: boolean;
+    can_be_deleted: boolean;
+    is_downloading_active: boolean;
+    is_downloading_completed: boolean;
+    download_offset: number;
+    downloaded_prefix_size: number;
+    downloaded_size: number;
+  };
+  remote: {
+    '@type': 'remoteFile';
+    id: string;
+    is_uploading_active: boolean;
+    is_uploading_completed: boolean;
+    uploaded_size: number;
+  }
+}
+
 export interface IUserProfilePhoto {
   '@type': 'profilePhoto';
-  'id': string;
-  'small': {
-    '@type': 'file';
-    'id': 399;
-    'size': 0;
-    'expected_size': 0;
-    'local': {
-      '@type': 'localFile';
-      'path': '';
-      'can_be_downloaded': true;
-      'can_be_deleted': false;
-      'is_downloading_active': false;
-      'is_downloading_completed': false;
-      'download_offset': 0;
-      'downloaded_prefix_size': 0;
-      'downloaded_size': 0
-    };
-    'remote': {
-      '@type': 'remoteFile';
-      'id': 'AQADAgADqqgxG0JeAgAJeBJLDQAEKsVUPHnuZfLcbw0AAQI';
-      'is_uploading_active': false;
-      'is_uploading_completed': true;
-      'uploaded_size': 0
-    }
-  };
-  'big': {
-    '@type': 'file';
-    'id': 400;
-    'size': 0;
-    'expected_size': 0;
-    'local': {
-      '@type': 'localFile';
-      'path': '';
-      'can_be_downloaded': true;
-      'can_be_deleted': false;
-      'is_downloading_active': false;
-      'is_downloading_completed': false;
-      'download_offset': 0;
-      'downloaded_prefix_size': 0;
-      'downloaded_size': 0
-    };
-    'remote': {
-      '@type': 'remoteFile';
-      'id': 'AQADAgADqqgxG0JeAgAJeBJLDQAEDs6Mb3l5ZRPebw0AAQI';
-      'is_uploading_active': false;
-      'is_uploading_completed': true;
-      'uploaded_size': 0
-    }
-  };
+  id: string;
+  small: IFile;
+  big: IFile;
 }
 
 export interface IUser {
   '@type': 'user';
   id: number;
-  'first_name': string;
-  'last_name': string;
-  'username': string;
-  'phone_number': string;
-  'status': {
+  first_name: string;
+  last_name: string;
+  username: string;
+  phone_number: string;
+  status: {
     '@type': 'userStatusOffline' | 'userStatusOnline';
-    'was_online': number
+    was_online: number;
   };
-  'profile_photo': IUserProfilePhoto;
-  'outgoing_link': {
-    '@type': 'linkStateNone'
+  profile_photo: IUserProfilePhoto;
+  outgoing_link: {
+    '@type': 'linkStateNone';
   };
-  'incoming_link': {
-    '@type': 'linkStateNone'
+  incoming_link: {
+    '@type': 'linkStateNone';
   };
-  'is_verified': boolean;
-  'is_support': boolean;
-  'restriction_reason': string;
-  'have_access': boolean;
-  'type': {
-    '@type': 'userTypeRegular'
+  is_verified: boolean;
+  is_support: boolean;
+  restriction_reason: string;
+  have_access: boolean;
+  type: {
+    '@type': 'userTypeRegular';
   };
-  'language_code': string;
+  language_code: string;
 }
 
 export interface IOkResponse {
@@ -221,19 +236,19 @@ export interface IOkResponse {
 
 export type IUpdateEvent
   = IOkResponse
-  & IUpdateUserEvent
-  & IUpdateOptionEvent
-  & IUpdateNewChatEvent
-  & IUpdateChatOrderEvent
-  & IUpdateNewMessageEvent
-  & IUpdateSuperGroupEvent
-  & IUpdateChatReadInboxEvent
-  & IUpdateChatLastMessageEvent
-  & IUpdateUnreadChatCountEvent
-  & IUpdateConnectionStateEvent
-  & IUpdateUnreadMessagesCountEvent
-  & IUpdateScopeNotificationSettingsEvent
-  & IUpdateHavePendingNotificationsEvent;
+  | IUpdateUserEvent
+  | IUpdateOptionEvent
+  | IUpdateNewChatEvent
+  | IUpdateChatOrderEvent
+  | IUpdateNewMessageEvent
+  | IUpdateSuperGroupEvent
+  | IUpdateChatReadInboxEvent
+  | IUpdateChatLastMessageEvent
+  | IUpdateUnreadChatCountEvent
+  | IUpdateConnectionStateEvent
+  | IUpdateUnreadMessagesCountEvent
+  | IUpdateScopeNotificationSettingsEvent
+  | IUpdateHavePendingNotificationsEvent;
 
 export interface IUpdateUserEvent {
   '@type': 'updateUser';
@@ -253,6 +268,7 @@ export interface IUpdateChatLastMessageEvent {
 
 export interface IUpdateNewMessageEvent {
   '@type': 'updateNewMessage';
+  chat_id: number;
   message: IMessage;
 }
 

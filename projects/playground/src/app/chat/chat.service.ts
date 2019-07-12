@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, merge, Observable} from 'rxjs';
 import {TgClient} from '../../tbClient';
-import {IChatFullData, IMessage} from '../../tgInterfaces';
+import {IChatFullData, IMessage, IUpdateNewMessageEvent} from '../../tgInterfaces';
 import {filter, map} from 'rxjs/internal/operators';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class ChatService {
   get newMessageUpdate$(): Observable<IMessage> {
     return this.tgClient.updates$.pipe(
       filter(() => !!this.current$.value),
-      filter(update => update['@type'] === 'updateNewMessage'),
+      filter<IUpdateNewMessageEvent>(update => update['@type'] === 'updateNewMessage'),
       filter(update => update.message.chat_id === this.current$.value.id),
       map(update => update.message),
     );

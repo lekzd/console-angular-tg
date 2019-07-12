@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {IChatFullData, IMessage} from '../../tgInterfaces';
+import {IChatFullData, IMessage, IUpdateChatLastMessageEvent, IUpdateChatOrderEvent, IUpdateNewMessageEvent, IUpdateChatReadInboxEvent} from '../../tgInterfaces';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {TgClient} from '../../tbClient';
 import {debounceTime, filter} from 'rxjs/internal/operators';
@@ -12,37 +12,37 @@ export class ConversationsService {
 
   constructor(private tgClient: TgClient) {
     this.tgClient.updates$
-      .pipe(filter(update => update['@type'] === 'updateChatLastMessage' && !!update.last_message))
+      .pipe(filter<IUpdateChatLastMessageEvent>(update => update['@type'] === 'updateChatLastMessage' && !!update.last_message))
       .subscribe(({chat_id, last_message}) => {
         this.tryAddMessageToStorage(chat_id, last_message);
         this.changeChatLastMessage(chat_id, last_message);
       });
 
     this.tgClient.updates$
-      .pipe(filter(update => update['@type'] === 'updateChatOrder'))
+      .pipe(filter<IUpdateChatOrderEvent>(update => update['@type'] === 'updateChatOrder'))
       .subscribe(({chat_id, order}) => {
         this.changeChatOrder(chat_id, order);
       });
 
     this.tgClient.updates$
-      .pipe(filter(update => update['@type'] === 'updateNewMessage' && !!update.message))
+      .pipe(filter<IUpdateNewMessageEvent>(update => update['@type'] === 'updateNewMessage' && !!update.message))
       .subscribe(({chat_id, message}) => {
         this.tryAddMessageToStorage(chat_id, message);
       });
 
     this.tgClient.updates$
-      .pipe(filter(update => update['@type'] === 'updateChatReadInbox'))
+      .pipe(filter<IUpdateChatReadInboxEvent>(update => update['@type'] === 'updateChatReadInbox'))
       .subscribe(({chat_id, unread_count, last_read_inbox_message_id}) => {
         this.changeChatUnreadCount(chat_id, unread_count, last_read_inbox_message_id);
       });
 
-    this.all$.subscribe(chats => {
+    /* this.all$.subscribe(chats => {
       chats.forEach(chatData => {
         if (chatData.last_message) {
           this.tryAddMessageToStorage(chatData.id, chatData.last_message);
         }
       });
-    });
+    } );*/
 
     this.mutateChatList$
       .pipe(
