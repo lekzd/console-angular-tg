@@ -2,9 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, OnInit, Renderer2, ViewC
 import {TgClient} from '../tbClient';
 import {BehaviorSubject, merge, Subject} from 'rxjs';
 import {Widgets} from 'blessed';
-import {IChatFullData, IUpdateConnectionStateEvent} from '../tgInterfaces';
 import {AppService} from './app.service';
-import {filter, map} from 'rxjs/internal/operators';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
 
@@ -88,11 +86,6 @@ export class AppComponent implements OnInit {
     },
   };
 
-  blockStyle = {
-    transparent: true,
-    ...this.elementStyle,
-  };
-
   @ViewChild('textBox', {static: true})
   set setInputElement(ref: IElementRef<Widgets.TextboxElement>) {
     this.appService.inputRef = ref.nativeElement;
@@ -120,14 +113,6 @@ export class AppComponent implements OnInit {
       .subscribe(letter => {
         this.input$.next(this.input$.value + letter);
       });
-
-    // this.tgClient.updates$.pipe(
-    //   filter(event => event['@type'] === 'updateConnectionState')
-    // ).subscribe(update => {
-    //   if (update["@type"] === 'updateConnectionState') {
-    //     console.log(update.state["@type"]);
-    //   }
-    // });
 
     setTimeout(() => {
       this.appService.focusList();

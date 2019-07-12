@@ -9,6 +9,7 @@ import {AppService} from './app.service';
 import {ConversationsComponent} from './conversations/conversations.component';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
+import {UsersService} from './chat/users.service';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import {ChatService} from './chat/chat.service';
   providers: [
     AppService,
     ChatService,
+    UsersService,
     ConversationsService,
     TgClient,
   ],

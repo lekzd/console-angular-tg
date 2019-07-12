@@ -7,6 +7,7 @@ import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';
 import {multiParagraphWordWrap, escapeFormattingTags} from './textUtils';
+import { UsersService } from './users.service';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -62,6 +63,7 @@ export class ChatComponent implements OnInit {
     private tgClient: TgClient,
     public appService: AppService,
     private chatService: ChatService,
+    private usersService: UsersService,
     private conversationsService: ConversationsService,
   ) {}
 
@@ -89,7 +91,10 @@ export class ChatComponent implements OnInit {
         return;
       }
 
-      const [user] = await this.tgClient.getMessagesAuthors([newMessage]);
+      const user = newMessage.sender_user_id
+        ? await this.usersService.getUser(newMessage.sender_user_id)
+        : null;
+
       const list = this.appService.chatRef.element;
       const strings = this.getMessageStrings(newMessage, user);
 
@@ -222,9 +227,9 @@ export class ChatComponent implements OnInit {
     if (!chat) {
       return;
     }
-  
+
     const messages = await this.conversationsService.loadConversationMessages(chat.id);
-    const users = await this.tgClient.getMessagesAuthors(messages);
+    const users = await this.usersService.getMessagesAuthors(messages);
     const strings = [];
 
     messages.forEach(message => {

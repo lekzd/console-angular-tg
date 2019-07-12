@@ -161,16 +161,10 @@ export class TgClient {
     });
   }
 
-  async getMessagesAuthors(messages: IMessage[]): Promise<IUser[]> {
-    const userIds = new Set<number>(messages.map(m => m.sender_user_id).filter(Number));
-
-    const promises = [...userIds].map(userId => {
-      return client.fetch({
-        '@type': 'getUser',
-        user_id: userId,
-      });
+  async getUser(userId: number): Promise<IUser> {
+    return client.fetch({
+      '@type': 'getUser',
+      user_id: userId,
     });
-
-    return await Promise.all(promises);
   }
 }
