@@ -8,6 +8,7 @@ import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';
 import {multiParagraphWordWrap, escapeFormattingTags} from './textUtils';
 import { UsersService } from './users.service';
+import { colors, fg, bg, defaultStyles } from '../colors';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -19,7 +20,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [scrollbar]="true"
       [label]="title$ | async"
       selectedFg="black"
-      selectedBg="#007700"
+      selectedBg="${colors.highlight}-fg"
       [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
       [tags]="true"
@@ -36,21 +37,7 @@ export class ChatComponent implements OnInit {
   messages$ = new BehaviorSubject<string[]>([]);
   title$ = new BehaviorSubject<string>('<--Выберите чат');
 
-  elementStyle = {
-    fg: 'white',
-    focus: {
-      border: {
-        fg: 'blue',
-      },
-    },
-    border: {
-      fg: 'grey',
-    },
-    scrollbar: {
-      bg: 'blue',
-      fg: 'red',
-    },
-  };
+  elementStyle = defaultStyles();
 
   @ViewChild('messagesList', {static: true})
   set setChatElement(ref: IElementRef<Widgets.ListElement>) {
@@ -114,17 +101,17 @@ export class ChatComponent implements OnInit {
       date.getMinutes()
     ].map(s => (s.toString() as any).padStart(2, '0'));
 
-    return `{#008080-fg}${parts.join(':')}{/}`;
+    return `{${fg(colors.fg10)}}${parts.join(':')}{/}`;
   }
 
   private formatUser(user: IUser | undefined, nameColor: string): string {
-    if (user === undefined) {
+    if (!user) {
       // in channels, authors goes without user ID
       return ``;
     }
 
     if (user.username && user.first_name && user.last_name) {
-      return `{#0087d7-fg}@${user.username}{/} {${nameColor}}${user.first_name} ${user.last_name}{/}`;
+      return `{${fg(colors.fg10)}}@${user.username}{/} {${nameColor}}${user.first_name} ${user.last_name}{/}`;
     }
 
     if (user.first_name && user.last_name) {
@@ -132,7 +119,7 @@ export class ChatComponent implements OnInit {
     }
 
     if (user.username && user.first_name) {
-      return `{#0087d7-fg}@${user.username}{/} {${nameColor}}${user.first_name}{/}`;
+      return `{${fg(colors.fg10)}}@${user.username}{/} {${nameColor}}${user.first_name}{/}`;
     }
 
     if (user.first_name) {
@@ -140,31 +127,33 @@ export class ChatComponent implements OnInit {
     }
 
     if (user.username) {
-      return `{#0087d7-fg}@${user.username}{/}`;
+      return `{${fg(colors.fg10)}}@${user.username}{/}`;
     }
 
     return `{${nameColor}}[unknown user]{/}`;
   }
 
   private getMessageFirstString(message: IMessage, user: IUser | undefined): string {
-    const nameColor = message.is_outgoing ? `#00ff00-fg` : `#af005f-fg`;
-    const direction = message.is_outgoing ? `{${nameColor}}{bold}➜{/}{/}` : `{${nameColor}}{bold}←{/}{/}`;
+    const nameColor = message.is_outgoing ? fg(colors.fg12) : fg(colors.fg9);
+    const direction = message.is_outgoing ? `{${nameColor}}{bold}⭢{/}{/}` : `{${nameColor}}{bold}⭠{/}{/}`;
+    const date = this.formatDate(message.date);
+    const author = this.formatUser(user, nameColor);
 
     switch (message.content['@type']) {
       case 'messageText':
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}`;
+        return `${direction} ${date} ${author}`;
       case 'messagePoll':
-          return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}poll:{/}`;
+        return `${direction} ${date} ${author} {${fg(colors.fg11)}}poll:{/}`;
       case 'messageSticker':
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[sticker ${message.content.sticker.emoji} ]{/}`;
+        return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[sticker ${message.content.sticker.emoji} ]{/}`;
       case 'messageAnimation':
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[animation ${message.content.caption.text || message.content.animation.file_name}]{/}`;
+        return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[animation ${message.content.animation.file_name}]{/}`;
       case 'messageChatAddMembers':
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}joined chat{/}`;
+        return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined chat{/}`;
       case 'messageChatJoinByLink':
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)} {#008080-fg}joined by invite link{/}`;
+        return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined by invite link{/}`;
       default:
-        return `${direction} ${this.formatDate(message.date)} ${this.formatUser(user, nameColor)}: {#008080-fg}[${message.content['@type']}]{/}`;
+        return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[${message.content['@type']}]{/}`;
     }
   }
 
@@ -182,7 +171,7 @@ export class ChatComponent implements OnInit {
 
     const content = this.getMessageContentString(repliedMessage) || ['<no message found>'];
 
-    return `{#005fd7-fg}>>>${content[0]}{/}`;
+    return `{${fg(colors.fg11)}}>>> ${content[0]}{/}`;
   }
 
   private getMessageContentString(message: IMessage): string[] | null {

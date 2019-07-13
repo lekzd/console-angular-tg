@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as blessed from 'blessed';
 import { Widgets } from 'blessed';
-
+import {config} from 'dotenv';
 import { ElementFactory, elementsFactory } from './elements-registry';
 
+const env = config().parsed;
 
 @Injectable()
 export class Screen {
@@ -30,7 +31,7 @@ export class Screen {
   private init() {
     this.screen = blessed.screen({
       smartCSR: true,
-      fullUnicode: true,
+      fullUnicode: !!env.EMOJI,
     });
     this.setupExitListener();
   }

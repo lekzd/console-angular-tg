@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef } from "@angular/core";
-import { Widgets } from "blessed";
-import { AppService } from "../app.service";
-import { ChatService } from "../chat/chat.service";
-import { TgClient } from "../../tbClient";
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
+import { Widgets } from 'blessed';
+import { AppService } from '../app.service';
+import { ChatService } from '../chat/chat.service';
+import { TgClient } from '../../tbClient';
+import { colors, fg, bg, defaultStyles } from '../colors';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -26,21 +27,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
 })
 export class InputComponent implements OnInit {
 
-  elementStyle = {
-    bg: 'black-bg',
-    fg: 'grey',
-    focus: {
-      fg: 'white',
-      border: {
-        fg: 'blue',
-        bg: 'black-bg',
-      },
-    },
-    border: {
-      fg: 'grey',
-      bg: 'black-bg',
-    },
-  };
+  elementStyle = defaultStyles();
 
   @ViewChild('textBox', {static: true})
   set setInputElement(ref: IElementRef<Widgets.TextboxElement>) {
@@ -64,7 +51,7 @@ export class InputComponent implements OnInit {
       return;
     }
 
-    await this.tgClient.sendTextMessage(text, chat.id)
+    await this.tgClient.sendTextMessage(text, chat.id);
 
     this.appService.inputRef.element.clearValue();
     this.appService.reRender();

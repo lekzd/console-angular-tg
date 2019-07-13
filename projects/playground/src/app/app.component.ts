@@ -3,6 +3,7 @@ import {BehaviorSubject, merge, Subject} from 'rxjs';
 import {AppService} from './app.service';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
+import { colors } from './colors';
 
 @Component({
   selector: 'pl-root',
@@ -51,11 +52,8 @@ export class AppComponent implements OnInit {
   updatesCount = 0;
 
   style = {
-    fg: 'white',
-    bg: 'green',
-    border: {
-      fg: 'red',
-    },
+    fg: colors.fg,
+    bg: colors.bg1,
   };
 
   private selectedIndex = 0;

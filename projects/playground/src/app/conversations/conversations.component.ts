@@ -6,8 +6,13 @@ import {IChatFullData} from '../../tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from './conversations.service';
 import { filter, map } from 'rxjs/operators';
+import { colors, fg, bg, defaultStyles } from '../colors';
 
 type IElementRef<T> = ElementRef<{element: T}>;
+
+const color_default = fg(colors.fg);
+const color_unread = fg(colors.fg12);
+const color_counter_unread = fg(colors.fg10);
 
 @Component({
   selector: 'pl-conversations',
@@ -17,7 +22,7 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [scrollbar]="true"
       [label]="connectionState$ | async"
       selectedFg="black"
-      selectedBg="#007700"
+      selectedBg="${colors.highlight}-fg"
       [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
       [tags]="true"
@@ -41,21 +46,7 @@ export class ConversationsComponent implements OnInit {
       )
   );
 
-  elementStyle = {
-    fg: 'white',
-    focus: {
-      border: {
-        fg: 'blue',
-      },
-    },
-    border: {
-      fg: 'grey',
-    },
-    scrollbar: {
-      bg: 'blue',
-      fg: 'red',
-    },
-  };
+  elementStyle = defaultStyles();
 
   @ViewChild('list', {static: true})
   set setChatElement(ref: IElementRef<Widgets.ListElement>) {
@@ -98,9 +89,9 @@ export class ConversationsComponent implements OnInit {
     const chats = chatsData.slice(0, 100);
 
     const data = chats.map(chatFull => {
-      const defaultStyle = `{${'gray-fg'}}`;
-      const accentStyles = chatFull.unread_count ? `{${'#00afff'}-fg}` : defaultStyle;
-      const textStyles = chatFull.unread_count ? `{${'#00ff00'}-fg}` : defaultStyle;
+      const defaultStyle = `{${color_default}}`;
+      const accentStyles = chatFull.unread_count ? `{${color_counter_unread}}` : defaultStyle;
+      const textStyles = chatFull.unread_count ? `{${color_unread}}` : defaultStyle;
 
       const unreadStr = `${(chatFull.unread_count.toString() as any).padEnd(5, ' ')}`;
 
