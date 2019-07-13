@@ -113,6 +113,28 @@ export interface IMessagesResponse {
   total_count: number;
 }
 
+export interface IProxy {
+  '@type': 'proxy';
+  id: number;
+  server: string;
+  port: number;
+  ast_used_date: number;
+  is_enabled: boolean;
+  type: {
+    '@type': 'proxyTypeHttp' | 'proxyTypeMtproto' | 'proxyTypeSocks5';
+  };
+}
+
+export interface IProxiesResponse {
+  '@type': 'proxies';
+  proxies: IProxy[];
+}
+
+export interface ISecondsResponse {
+  '@type': 'seconds';
+  seconds: number;
+}
+
 export interface IMessage {
   '@type': 'message';
   id: number;

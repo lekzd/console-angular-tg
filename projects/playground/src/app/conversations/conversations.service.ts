@@ -97,7 +97,7 @@ export class ConversationsService {
 
     const messages = this.storage.get(chatId);
 
-    if (messages.find(message => message.id === newMessage.id)) {
+    if (messages.some(message => message.id === newMessage.id)) {
       return;
     }
 

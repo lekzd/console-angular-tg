@@ -4,6 +4,7 @@ import {AppService} from './app.service';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
 import { colors } from './colors';
+import { TgClient } from '../tbClient';
 
 @Component({
   selector: 'pl-root',
@@ -59,6 +60,7 @@ export class AppComponent implements OnInit {
   private selectedIndex = 0;
 
   constructor(
+    private tgClient: TgClient,
     private renderer2: Renderer2,
     public appService: AppService,
     public chatService: ChatService,
@@ -73,6 +75,10 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.tgClient.usedProxy$.subscribe(proxy => {
+      console.log('proxy', proxy);
+    })
+
     this.keyPress$
       .subscribe(letter => {
         this.input$.next(this.input$.value + letter);

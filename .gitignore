@@ -36,6 +36,7 @@ yarn-error.log
 testem.log
 /typings
 .env
+env.json
 libtdjson.*
 
 # System Files

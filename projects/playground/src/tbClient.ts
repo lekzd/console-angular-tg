@@ -1,30 +1,25 @@
 import {
   IChatFullData, IMessage, IMessagesResponse, IOkResponse, IUpdateConnectionStateEvent, IUpdateEvent, IUpdatesResponse,
   IUser,
-  IUpdateOptionEvent
+  IUpdateOptionEvent,
+  IProxiesResponse,
+  ISecondsResponse,
+  IProxy
 } from './tgInterfaces';
-const readline = require('readline');
 import {Injectable} from '@angular/core';
-import {config} from 'dotenv';
 import {Structs} from 'tglib';
-import {Subject} from 'rxjs';
+import {Subject, BehaviorSubject} from 'rxjs';
 import {filter} from 'rxjs/internal/operators';
 const { Client } = require('tglib/node');
 
-const env = config().parsed;
-//
-const makeReadLine = (question): Promise<string> => new Promise(resolve => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+interface IProxyConfig {
+  type: string;
+  server: string;
+  port: number;
+  data: any;
+}
 
-rl.question(question + ' ', answer => {
-  resolve(answer);
-rl.close();
-});
-});
-
+const env = require('../../../../env.json');
 let client: any = null;
 
 export async function tgClientInit() {
@@ -61,6 +56,7 @@ export class TgClient {
   client = client;
   options: {[key: string]: number | string | boolean} = {};
   updates$ = new Subject<IUpdateEvent>();
+  usedProxy$ = new BehaviorSubject<IProxy>(null);
 
   constructor() {
     this.client.registerCallback('td:update', (update: IUpdateEvent) => {
@@ -79,6 +75,45 @@ export class TgClient {
       .subscribe(update => {
         this.options[update.name] = update.value.value;
       });
+
+    this.tryProxiesFromConfig(env.proxies);
+  }
+
+  private async tryProxiesFromConfig(proxies: IProxyConfig[]) {
+    const response = await this.getProxies();
+    const activeProxy = response.proxies.find(({is_enabled}) => is_enabled);
+
+    if (activeProxy) {
+      this.usedProxy$.next(activeProxy);
+
+      return;
+    }
+
+    const promises = proxies
+      .filter(({server, port}) => {
+        return !response.proxies.some(savedProxy =>
+          savedProxy.server === server
+          && savedProxy.port === port
+        )
+      })
+      .map(({type, server, port, data}) => this.addProxy(server, port, type, data));
+
+    await Promise.all(promises);
+
+    const allProxies = await this.getProxies();
+
+    for (let i = 0; i < allProxies.proxies.length; i++) {
+      const proxyItem = allProxies.proxies[i];
+
+      try {
+        await this.pingProxy(proxyItem.id);
+        await this.enableProxy(proxyItem.id);
+
+        break;
+      } catch (e) {
+        continue;
+      }
+    }
   }
 
   async getChats(): Promise<IChatFullData[]> {
@@ -172,6 +207,38 @@ export class TgClient {
       '@type': 'getMessage',
       chat_id,
       message_id,
+    });
+  }
+
+  async getProxies(): Promise<IProxiesResponse> {
+    return client.fetch({
+      '@type': 'getProxies',
+    });
+  }
+
+  async pingProxy(proxy_id: number): Promise<ISecondsResponse> {
+    return client.fetch({
+      '@type': 'pingProxy',
+      proxy_id,
+    });
+  }
+
+  async enableProxy(proxy_id: number): Promise<IOkResponse> {
+    return client.fetch({
+      '@type': 'enableProxy',
+      proxy_id,
+    });
+  }
+
+  async addProxy(server: string, port: number, type: string, data?: any): Promise<IOkResponse> {
+    return client.fetch({
+      '@type': 'addProxy',
+      server,
+      port,
+      type: {
+        '@type': type,
+        ...data,
+      },
     });
   }
 }
