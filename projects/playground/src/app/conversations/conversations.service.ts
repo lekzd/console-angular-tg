@@ -6,7 +6,7 @@ import {debounceTime, filter} from 'rxjs/internal/operators';
 
 @Injectable()
 export class ConversationsService {
-  storage = new Map<number, IMessage[]>();
+  private storage = new Map<number, IMessage[]>();
   all$ = new BehaviorSubject<IChatFullData[]>([]);
   mutateChatList$ = new BehaviorSubject<IChatFullData[]>([]);
 
@@ -131,6 +131,12 @@ export class ConversationsService {
     }
 
     return cachedMessages;
+  }
+
+  getMessage(chatId: number, messageId: number): IMessage {
+    const messages = this.storage.get(chatId) || [];
+
+    return messages.find(({id}) => messageId === id);
   }
 
 }

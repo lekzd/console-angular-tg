@@ -36,7 +36,7 @@ import {ChatService} from './chat/chat.service';
          [right]="0"
          [height]="2"
          [width]="20"
-         [content]=""
+         [content]="input$ | async"
          [style]="style">
     </box>
   `,

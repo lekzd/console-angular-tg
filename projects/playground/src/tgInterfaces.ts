@@ -127,7 +127,7 @@ export interface IMessage {
   contains_unread_mention: boolean;
   date: number;
   edit_date: boolean;
-  reply_to_message_id: boolean;
+  reply_to_message_id: number;
   ttl: number;
   ttl_expires_in: number;
   via_bot_user_id: number;

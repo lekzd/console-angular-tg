@@ -76,7 +76,7 @@ export class ConversationsComponent implements OnInit {
         if (this.appService.listRef && this.appService.listRef.element) {
           this.appService.listRef.element.screen.render();
         }
-      });
+      }, 1000);
     });
     //
     // merge(

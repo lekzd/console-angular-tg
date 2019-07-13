@@ -168,7 +168,24 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  private getMessageContentString(message: IMessage, user: IUser | undefined): string[] | null {
+  private getRepliedmessageString(message: IMessage): string {
+    if (!message.reply_to_message_id) {
+      return;
+    }
+
+    const id = message.reply_to_message_id;
+    const repliedMessage = this.conversationsService.getMessage(message.chat_id, id);
+
+    if (!repliedMessage) {
+      return;
+    }
+
+    const content = this.getMessageContentString(repliedMessage) || ['<no message found>'];
+
+    return `{#005fd7-fg}>>>${content[0]}{/}`;
+  }
+
+  private getMessageContentString(message: IMessage): string[] | null {
     switch (message.content['@type']) {
       case 'messageText':
         return multiParagraphWordWrap(escapeFormattingTags(message.content.text.text), 50, '\n');
@@ -191,9 +208,16 @@ export class ChatComponent implements OnInit {
     const result = [];
 
     const first = this.getMessageFirstString(message, author);
-    const rest = this.getMessageContentString(message, author);
+    const reply = message.reply_to_message_id
+      ? this.getRepliedmessageString(message)
+      : null;
+    const rest = this.getMessageContentString(message);
 
     result.push(first);
+
+    if (reply) {
+      result.push(reply);
+    }
 
     if (rest) {
       result.push(...rest);

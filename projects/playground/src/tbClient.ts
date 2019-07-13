@@ -167,4 +167,12 @@ export class TgClient {
       user_id: userId,
     });
   }
+
+  async getMessage(chat_id: number, message_id: number): Promise<IUser> {
+    return client.fetch({
+      '@type': 'getMessage',
+      chat_id,
+      message_id,
+    });
+  }
 }

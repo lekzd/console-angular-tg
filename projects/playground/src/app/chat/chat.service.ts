@@ -18,7 +18,6 @@ export class ChatService {
   }
 
   messages$ = merge(
-    // this.chatLastMessageUpdate$,
     this.newMessageUpdate$,
   );
 
