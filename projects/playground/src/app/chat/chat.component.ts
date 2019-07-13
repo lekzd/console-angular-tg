@@ -241,6 +241,8 @@ export class ChatComponent implements OnInit {
       return;
     }
 
+    this.messages$.next([]);
+
     const messages = await this.conversationsService.loadConversationMessages(chat.id);
     const users = await this.usersService.getMessagesAuthors(messages);
     const strings = [];

@@ -143,6 +143,10 @@ export class TgClient {
       currentChunk.messages.forEach(message => {
         allMessages.set(message.id, message);
       });
+
+      if (currentChunk.messages.length < limit) {
+        break;
+      }
     }
 
     return [...allMessages.values()];

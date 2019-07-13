@@ -119,6 +119,7 @@ export class ConversationsService {
 
     if (cachedMessages.length < 50) {
       await this.tgClient.getMessages(chatId)
+        .catch(() => [])
         .then(messages => {
           messages.forEach(message => {
             this.tryAddMessageToStorage(chatId, message);
