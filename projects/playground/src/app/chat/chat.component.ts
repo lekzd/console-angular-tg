@@ -135,7 +135,7 @@ export class ChatComponent implements OnInit {
 
   private getMessageFirstString(message: IMessage, user: IUser | undefined): string {
     const nameColor = message.is_outgoing ? fg(colors.fg12) : fg(colors.fg9);
-    const direction = message.is_outgoing ? `{${nameColor}}{bold}⭢{/}{/}` : `{${nameColor}}{bold}⭠{/}{/}`;
+    const direction = message.is_outgoing ? `{${nameColor}}{bold}⇢{/}{/}` : `{${nameColor}}{bold}⇠{/}{/}`;
     const date = this.formatDate(message.date);
     const author = this.formatUser(user, nameColor);
 
