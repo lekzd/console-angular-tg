@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {IChatFullData, IMessage, IUpdateChatLastMessageEvent, IUpdateChatOrderEvent, IUpdateNewMessageEvent, IUpdateChatReadInboxEvent} from '../../tgInterfaces';
+import {IChatFullData, IMessage, IUpdateChatLastMessageEvent, IUpdateChatOrderEvent, IUpdateNewMessageEvent, IUpdateChatReadInboxEvent} from '../../tg/tgInterfaces';
 import {BehaviorSubject, Subject} from 'rxjs';
-import {TgClient} from '../../tbClient';
+import {TgClient} from '../../tg/tgClient';
 import {debounceTime, filter} from 'rxjs/internal/operators';
 
 @Injectable()

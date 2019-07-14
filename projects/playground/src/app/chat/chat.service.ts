@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, merge, Observable} from 'rxjs';
-import {TgClient} from '../../tbClient';
-import {IChatFullData, IMessage, IUpdateNewMessageEvent} from '../../tgInterfaces';
+import {TgClient} from '../../tg/tgClient';
+import {IChatFullData, IMessage, IUpdateNewMessageEvent} from '../../tg/tgInterfaces';
 import {filter, map} from 'rxjs/internal/operators';
 
 @Injectable()

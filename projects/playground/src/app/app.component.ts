@@ -4,7 +4,7 @@ import {AppService} from './app.service';
 import {ConversationsService} from './conversations/conversations.service';
 import {ChatService} from './chat/chat.service';
 import { colors } from './colors';
-import { TgClient } from '../tbClient';
+import { TgClient } from '../tg/tgClient';
 
 @Component({
   selector: 'pl-root',

@@ -10,6 +10,7 @@ import {Injectable} from '@angular/core';
 import {Structs} from 'tglib';
 import {Subject, BehaviorSubject} from 'rxjs';
 import {filter} from 'rxjs/internal/operators';
+import path from 'path';
 const { Client } = require('tglib/node');
 
 interface IProxyConfig {
@@ -19,8 +20,8 @@ interface IProxyConfig {
   data: any;
 }
 
-const env = require('../../../../env.json');
-let client: any = null;
+const env = require(path.join(process.cwd(), 'env.json'));
+let client: typeof Client = null;
 
 export async function tgClientInit() {
   client = new Client({
@@ -43,7 +44,7 @@ export async function tgClientInit() {
     return await defaultHandler(args);
   });
 
-// register callback for errors
+  // register callback for errors
   client.registerCallback('td:error', (error) => {
     console.log('[error]', error);
   });
@@ -187,13 +188,35 @@ export class TgClient {
   }
 
   async setOption(name: string, value: number | string | boolean): Promise<IOkResponse> {
+    let valueStructure = null;
+
+    switch (typeof value) {
+      case 'string':
+        valueStructure = {
+          '@type': 'optionValueString',
+          value,
+        };
+        break;
+      case 'number':
+        valueStructure = {
+          '@type': 'optionValueNumber',
+          value,
+        };
+        break;
+      case 'boolean':
+        valueStructure = {
+          '@type': 'optionValueBoolean',
+          value,
+        };
+        break;
+      default:
+        throw new Error('setOption(): Unexpected value type');
+    }
+
     return await client.fetch({
       '@type': 'setOption',
       name,
-      value: {
-        '@type': 'optionValueBoolean',
-        value,
-      },
+      value: valueStructure,
     });
   }
 

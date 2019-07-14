@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as blessed from 'blessed';
 import { Widgets } from 'blessed';
-import {config} from 'dotenv';
 import { ElementFactory, elementsFactory } from './elements-registry';
+import path from 'path';
 
-const env = config().parsed;
+const env = require(path.join(process.cwd(), 'env.json'));
 
 @Injectable()
 export class Screen {

@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {TgClient} from '../../tbClient';
+import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject} from 'rxjs';
 import {Widgets} from 'blessed';
-import {IChatFullData, IMessage, IUser} from '../../tgInterfaces';
+import {IChatFullData, IMessage, IUser} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';

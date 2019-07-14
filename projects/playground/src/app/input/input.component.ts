@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef } fro
 import { Widgets } from 'blessed';
 import { AppService } from '../app.service';
 import { ChatService } from '../chat/chat.service';
-import { TgClient } from '../../tbClient';
+import { TgClient } from '../../tg/tgClient';
 import { colors, fg, bg, defaultStyles } from '../colors';
 
 type IElementRef<T> = ElementRef<{element: T}>;

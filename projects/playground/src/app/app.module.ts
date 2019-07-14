@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TerminalModule } from 'platform-terminal';
 
 import { AppComponent } from './app.component';
-import {TgClient} from '../tbClient';
+import {TgClient} from '../tg/tgClient';
 import {ChatComponent} from './chat/chat.component';
 import {AppService} from './app.service';
 import {ConversationsComponent} from './conversations/conversations.component';
