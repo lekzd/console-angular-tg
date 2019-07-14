@@ -5,7 +5,7 @@ import {Widgets} from 'blessed';
 import {IChatFullData} from '../../tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from './conversations.service';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, tap } from 'rxjs/operators';
 import { colors, fg, bg, defaultStyles } from '../colors';
 
 type IElementRef<T> = ElementRef<{element: T}>;
@@ -38,13 +38,16 @@ export class ConversationsComponent implements OnInit {
 
   chats$ = new BehaviorSubject<string[]>([]);
 
-  connectionState$ = merge(
-    this.tgClient.updates$
+  connectionState$ = this.tgClient.updates$
       .pipe(
         filter(event => event['@type'] === 'updateConnectionState'),
         map(event => event['@type']),
-      )
-  );
+        tap(() => {
+          setTimeout(() => {
+            this.reRender();
+          }, 1000);
+        })
+      );
 
   elementStyle = defaultStyles();
 
@@ -64,25 +67,19 @@ export class ConversationsComponent implements OnInit {
       this.chats$.next(this.generateTable(chatsData));
 
       setTimeout(() => {
-        if (this.appService.listRef && this.appService.listRef.element) {
-          this.appService.listRef.element.screen.render();
-        }
+        this.reRender();
       }, 1000);
     });
-    //
-    // merge(
-    //   fromPromise(this.tgClient.getChats()),
-    //   // interval(30000)
-    // )
-    //   .pipe(switchMap(() => fromPromise(this.tgClient.getChats())))
-    //   .subscribe(chatsData => {
-    //     this.conversationsService.all$.next(chatsData);
-    //     this.chats$.next(this.generateTable(chatsData));
-    //   });
   }
 
   ngOnInit() {
 
+  }
+
+  reRender() {
+    if (this.appService.listRef && this.appService.listRef.element) {
+      this.appService.listRef.element.screen.render();
+    }
   }
 
   generateTable(chatsData: IChatFullData[]) {

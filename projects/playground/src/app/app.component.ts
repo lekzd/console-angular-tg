@@ -75,10 +75,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.tgClient.usedProxy$.subscribe(proxy => {
-      console.log('proxy', proxy);
-    })
-
     this.keyPress$
       .subscribe(letter => {
         this.input$.next(this.input$.value + letter);

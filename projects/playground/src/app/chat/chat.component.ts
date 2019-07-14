@@ -9,6 +9,7 @@ import {ChatService} from './chat.service';
 import {multiParagraphWordWrap, escapeFormattingTags} from './textUtils';
 import { UsersService } from './users.service';
 import { colors, fg, bg, defaultStyles } from '../colors';
+import { filter } from 'rxjs/operators';
 
 type IElementRef<T> = ElementRef<{element: T}>;
 
@@ -73,25 +74,25 @@ export class ChatComponent implements OnInit {
       this.appService.chatRef.element.render();
     });
 
-    this.chatService.messages$.subscribe(async newMessage => {
-      if (!newMessage) {
-        return;
-      }
+    this.chatService.messages$
+      .pipe(filter(newMessage => !!newMessage
+          && !this.conversationsService.getLocalMessage(newMessage.chat_id, newMessage.id)
+      ))
+      .subscribe(async newMessage => {
+        const user = newMessage.sender_user_id
+          ? await this.usersService.getUser(newMessage.sender_user_id)
+          : null;
 
-      const user = newMessage.sender_user_id
-        ? await this.usersService.getUser(newMessage.sender_user_id)
-        : null;
+        const list = this.appService.chatRef.element;
+        const strings = this.getMessageStrings(newMessage, user);
 
-      const list = this.appService.chatRef.element;
-      const strings = this.getMessageStrings(newMessage, user);
+        strings.forEach(item => {
+          list.addItem(item);
+        });
 
-      strings.forEach(item => {
-        list.addItem(item);
+        list.down(strings.length);
+        list.render();
       });
-
-      list.down(strings.length);
-      list.render();
-    });
   }
 
   private formatDate(timestamp: number): string {
@@ -163,7 +164,7 @@ export class ChatComponent implements OnInit {
     }
 
     const id = message.reply_to_message_id;
-    const repliedMessage = this.conversationsService.getMessage(message.chat_id, id);
+    const repliedMessage = this.conversationsService.getLocalMessage(message.chat_id, id);
 
     if (!repliedMessage) {
       return;
@@ -243,7 +244,7 @@ export class ChatComponent implements OnInit {
 
     this.messages$.next([]);
 
-    const messages = await this.conversationsService.loadConversationMessages(chat.id);
+    const messages = await this.conversationsService.loadConversationMessages(chat);
     const users = await this.usersService.getMessagesAuthors(messages);
     const strings = [];
 

@@ -114,11 +114,12 @@ export class ConversationsService {
       });
   }
 
-  async loadConversationMessages(chatId: number): Promise<IMessage[]> {
+  async loadConversationMessages(chat: IChatFullData): Promise<IMessage[]> {
+    const chatId = chat.id;
     const cachedMessages = this.storage.get(chatId) || [];
 
     if (cachedMessages.length < 50) {
-      await this.tgClient.getMessages(chatId)
+      await this.tgClient.getChatLastMessages(chat)
         .catch(() => [])
         .then(messages => {
           messages.forEach(message => {
@@ -134,7 +135,7 @@ export class ConversationsService {
     return cachedMessages;
   }
 
-  getMessage(chatId: number, messageId: number): IMessage {
+  getLocalMessage(chatId: number, messageId: number): IMessage {
     const messages = this.storage.get(chatId) || [];
 
     return messages.find(({id}) => messageId === id);
