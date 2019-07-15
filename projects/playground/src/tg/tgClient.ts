@@ -81,7 +81,11 @@ export class TgClient {
   }
 
   private async tryProxiesFromConfig(proxies: IProxyConfig[]) {
-    const response = await this.getProxies();
+    if (proxies.length === 0) {
+      return;
+    }
+
+    const response = await this.getProxies().catch(() => ({proxies: []}));
     const activeProxy = response.proxies.find(({is_enabled}) => is_enabled);
 
     if (activeProxy) {
@@ -95,7 +99,7 @@ export class TgClient {
         return !response.proxies.some(savedProxy =>
           savedProxy.server === server
           && savedProxy.port === port
-        )
+        );
       })
       .map(({type, server, port, data}) => this.addProxy(server, port, type, data));
 

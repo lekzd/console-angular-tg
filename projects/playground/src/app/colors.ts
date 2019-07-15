@@ -39,6 +39,10 @@ export const defaultStyles = () => ({
       bg: colors.bg,
       fg: fg(colors.fg10),
     },
+    label: {
+      bg: colors.bg,
+      fg: fg(colors.fg),
+    },
     scrollbar: {
       bg: colors.bg,
       fg: bg(colors.fg10),

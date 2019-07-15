@@ -21,7 +21,7 @@ const color_counter_unread = fg(colors.fg10);
       border="line"
       [scrollbar]="true"
       [label]="connectionState$ | async"
-      selectedFg="#000000"
+      selectedFg="#808000"
       selectedBg="${colors.highlight}"
       [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
@@ -41,7 +41,7 @@ export class ConversationsComponent implements OnInit {
   connectionState$ = this.tgClient.updates$
       .pipe(
         filter<IUpdateConnectionStateEvent>(event => event['@type'] === 'updateConnectionState'),
-        map(event => event.state["@type"]),
+        map(event => event.state['@type']),
         tap(() => {
           setTimeout(() => {
             this.reRender();
