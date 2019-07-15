@@ -134,7 +134,7 @@ export class TgClient {
 
   async getChatLastMessages(chat: IChatFullData): Promise<IMessage[]> {
     const chatId = chat.id;
-    const limit = 100;
+    const limit = 25;
     const allMessages = new Map<number, IMessage>();
     let triesLeft = 9;
 

@@ -157,6 +157,9 @@ export interface IMessage {
   views: number;
   media_album_id: string;
   content: IMessageContent;
+  sending_state?: {
+    '@type': 'messageSendingStatePending'
+  };
 }
 
 type IChatType = IChatTypeSuperGroup;
@@ -290,7 +293,6 @@ export interface IUpdateChatLastMessageEvent {
 
 export interface IUpdateNewMessageEvent {
   '@type': 'updateNewMessage';
-  chat_id: number;
   message: IMessage;
 }
 

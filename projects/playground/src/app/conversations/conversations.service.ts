@@ -14,8 +14,11 @@ export class ConversationsService {
     this.tgClient.updates$
       .pipe(filter<IUpdateChatLastMessageEvent>(update => update['@type'] === 'updateChatLastMessage' && !!update.last_message))
       .subscribe(({chat_id, last_message}) => {
-        this.tryAddMessageToStorage(chat_id, last_message);
-        this.changeChatLastMessage(chat_id, last_message);
+        // after new message sent to chat by user we got 2 messages with different ids but first of the with sending_state object
+        if (!last_message.sending_state) {
+          this.tryAddMessageToStorage(chat_id, last_message);
+          this.changeChatLastMessage(chat_id, last_message);
+        }
       });
 
     this.tgClient.updates$
@@ -26,8 +29,10 @@ export class ConversationsService {
 
     this.tgClient.updates$
       .pipe(filter<IUpdateNewMessageEvent>(update => update['@type'] === 'updateNewMessage' && !!update.message))
-      .subscribe(({chat_id, message}) => {
-        this.tryAddMessageToStorage(chat_id, message);
+      .subscribe(({message}) => {
+        if (!message.sending_state) {
+          this.tryAddMessageToStorage(message.chat_id, message);
+        }
       });
 
     this.tgClient.updates$
@@ -118,7 +123,7 @@ export class ConversationsService {
     const chatId = chat.id;
     const cachedMessages = this.storage.get(chatId) || [];
 
-    if (cachedMessages.length < 50) {
+    if (cachedMessages.length < 25) {
       await this.tgClient.getChatLastMessages(chat)
         .catch(() => [])
         .then(messages => {

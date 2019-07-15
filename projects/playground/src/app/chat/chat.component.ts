@@ -75,9 +75,7 @@ export class ChatComponent implements OnInit {
     });
 
     this.chatService.messages$
-      .pipe(filter(newMessage => !!newMessage
-          && !this.conversationsService.getLocalMessage(newMessage.chat_id, newMessage.id)
-      ))
+      .pipe(filter(newMessage => !!newMessage))
       .subscribe(async newMessage => {
         const user = newMessage.sender_user_id
           ? await this.usersService.getUser(newMessage.sender_user_id)
