@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from 
 import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject, merge} from 'rxjs';
 import {Widgets} from 'blessed';
-import {IChatFullData} from '../../tg/tgInterfaces';
+import {IChatFullData, IUpdateConnectionStateEvent} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from './conversations.service';
 import { filter, map, tap } from 'rxjs/operators';
@@ -21,8 +21,8 @@ const color_counter_unread = fg(colors.fg10);
       border="line"
       [scrollbar]="true"
       [label]="connectionState$ | async"
-      selectedFg="black"
-      selectedBg="${colors.highlight}-fg"
+      selectedFg="#000000"
+      selectedBg="${colors.highlight}"
       [padding]="{left: 1, top: 0, right: 1, bottom: 0}"
       [keys]="true"
       [tags]="true"
@@ -40,8 +40,8 @@ export class ConversationsComponent implements OnInit {
 
   connectionState$ = this.tgClient.updates$
       .pipe(
-        filter(event => event['@type'] === 'updateConnectionState'),
-        map(event => event['@type']),
+        filter<IUpdateConnectionStateEvent>(event => event['@type'] === 'updateConnectionState'),
+        map(event => event.state["@type"]),
         tap(() => {
           setTimeout(() => {
             this.reRender();

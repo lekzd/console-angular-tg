@@ -161,7 +161,7 @@ export class TgClient {
       lastLoadedMessage = currentChunk.messages.pop();
     }
 
-    return [...allMessages.values()];
+    return [...allMessages.values(), lastLoadedMessage];
   }
 
   async openChat(chatId: number): Promise<IOkResponse> {
