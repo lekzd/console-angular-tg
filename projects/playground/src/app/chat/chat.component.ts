@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from 
 import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject} from 'rxjs';
 import {Widgets} from 'blessed';
-import {IChatFullData, IMessage, IUser} from '../../tg/tgInterfaces';
+import {IChatFullData, IMessage, IUser, IPollOption} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
 import {ChatService} from './chat.service';
@@ -173,6 +173,33 @@ export class ChatComponent implements OnInit {
     return `{${fg(colors.fg11)}}>>> ${content[0]}{/}`;
   }
 
+  private getVoteOptionString(option: IPollOption): string {
+    let string = '';
+    const maxWidth = 50;
+    const checkbox = option.is_chosen ? ' [v] ' : ' [ ] ';
+
+    if (option.vote_percentage) {
+      string = `${option.text}: ${option.vote_percentage}%`;
+
+      if (option.is_chosen) {
+        string = `${option.text}: ${option.vote_percentage}%`;
+      }
+
+      const width = Math.floor((option.vote_percentage / 100) * maxWidth);
+
+      string = string.padEnd(maxWidth, ' ');
+      string = `${checkbox}{#008000-bg}${string.substring(0, width)}{/}${string.substring(width)}`;
+    } else {
+      string = ` [ ] ${option.text}`;
+
+      if (option.is_chosen) {
+        string = ` [v] ${option.text}`;
+      }
+    }
+
+    return string;
+  }
+
   private getMessageContentString(message: IMessage): string[] | null {
     switch (message.content['@type']) {
       case 'messageText':
@@ -186,7 +213,7 @@ export class ChatComponent implements OnInit {
       case 'messagePoll':
         const question = multiParagraphWordWrap(escapeFormattingTags(message.content.poll.question), 50, '\n');
 
-        return [...question, ...message.content.poll.options.map(option => `${option.text}: ${option.vote_percentage}%`)]
+        return [...question, ...message.content.poll.options.map(this.getVoteOptionString)]
       default:
         return null;
     }

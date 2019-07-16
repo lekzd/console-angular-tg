@@ -81,12 +81,16 @@ export class TgClient {
   }
 
   private async tryProxiesFromConfig(proxies: IProxyConfig[]) {
-    if (proxies.length === 0) {
-      return;
-    }
-
     const response = await this.getProxies().catch(() => ({proxies: []}));
     const activeProxy = response.proxies.find(({is_enabled}) => is_enabled);
+
+    if (proxies.length === 0) {
+      if (activeProxy) {
+        await this.disableProxy(activeProxy.id);
+      }
+
+      return;
+    }
 
     if (activeProxy) {
       this.usedProxy$.next(activeProxy);
@@ -268,6 +272,13 @@ export class TgClient {
   async enableProxy(proxy_id: number): Promise<IOkResponse> {
     return client.fetch({
       '@type': 'enableProxy',
+      proxy_id,
+    });
+  }
+
+  async disableProxy(proxy_id: number): Promise<IOkResponse> {
+    return client.fetch({
+      '@type': 'disableProxy',
       proxy_id,
     });
   }

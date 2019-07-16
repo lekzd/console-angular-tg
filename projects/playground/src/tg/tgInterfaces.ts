@@ -16,7 +16,7 @@ interface IMessageFormattedText {
   text: string;
 }
 
-interface IPollOption {
+export interface IPollOption {
   '@type': 'pollOption',
   text: string;
   voter_count: number;
