@@ -26,5 +26,5 @@ export function multiParagraphWordWrap(str, width, delimiter) {
 }
 
 export function escapeFormattingTags(text: string): string {
-  return text.replace(/\{/g, '⎨').replace(/\}/g, '');
+  return text.replace(/\{/g, '❴').replace(/\}/g, '❵');
 }

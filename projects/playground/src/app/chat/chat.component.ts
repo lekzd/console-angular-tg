@@ -84,6 +84,8 @@ export class ChatComponent implements OnInit {
         const list = this.appService.chatRef.element;
         const strings = this.getMessageStrings(newMessage, user);
 
+        this.tgClient.readChatMessages(newMessage.chat_id, [newMessage.id]);
+
         strings.forEach(item => {
           list.addItem(item);
         });

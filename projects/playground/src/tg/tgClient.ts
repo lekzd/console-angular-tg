@@ -27,6 +27,7 @@ export async function tgClientInit() {
   client = new Client({
     apiId: env.APP_ID,
     apiHash: env.API_HASH,
+    binaryPath: path.join(process.cwd(), 'bin', 'libtdjson'),
   });
 
   // Save tglib default handler which prompt input at console
