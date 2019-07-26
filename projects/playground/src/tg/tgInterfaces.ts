@@ -11,9 +11,35 @@ type IMessageContent
   | IMessageVideoContent
   | IMessagePollContent;
 
-interface IMessageFormattedText {
+export type TextEntityType
+  = 'textEntityTypeBold'
+  | 'textEntityTypeBotCommand'
+  | 'textEntityTypeCashtag'
+  | 'textEntityTypeCode'
+  | 'textEntityTypeEmailAddress'
+  | 'textEntityTypeHashtag'
+  | 'textEntityTypeItalic'
+  | 'textEntityTypeMention'
+  | 'textEntityTypeMentionName'
+  | 'textEntityTypePhoneNumber'
+  | 'textEntityTypePre'
+  | 'textEntityTypePreCode'
+  | 'textEntityTypeTextUrl'
+  | 'textEntityTypeUrl';
+
+export interface IFormattedTextEntity {
+  '@type': 'textEntity';
+  length: number;
+  offset: number;
+  type: {
+    '@type': TextEntityType;
+  }
+}
+
+export interface IMessageFormattedText {
   '@type': 'formattedText';
   text: string;
+  entities: IFormattedTextEntity[];
 }
 
 export interface IPollOption {
@@ -302,13 +328,13 @@ export interface IUpdateHavePendingNotificationsEvent {
   have_unreceived_notifications: boolean;
 }
 
-export enum ConnectionState {
-  connectionStateConnecting = 'connectionStateConnecting,',
-  connectionStateConnectingToProxy = 'connectionStateConnectingToProxy,',
-  connectionStateReady = 'connectionStateReady,',
-  connectionStateUpdating = 'connectionStateUpdating,',
-  connectionStateWaitingForNetwork = 'connectionStateWaitingForNetwork',
-}
+export type ConnectionState
+  = 'connectionStateConnecting'
+  | 'connectionStateConnectingToProxy'
+  | 'connectionStateReady'
+  | 'connectionStateUpdating'
+  | 'connectionStateWaitingForNetwork';
+
 
 export interface IUpdateConnectionStateEvent {
   '@type': 'updateConnectionState';
