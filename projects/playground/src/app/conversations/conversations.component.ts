@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from 
 import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject, merge} from 'rxjs';
 import {Widgets} from 'blessed';
-import {IChatFullData, IUpdateConnectionStateEvent} from '../../tg/tgInterfaces';
+import {ConnectionState, IChatFullData, IUpdateConnectionStateEvent} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from './conversations.service';
 import { filter, map, tap } from 'rxjs/operators';
@@ -39,15 +39,16 @@ export class ConversationsComponent implements OnInit {
   chats$ = new BehaviorSubject<string[]>([]);
 
   connectionState$ = this.tgClient.updates$
-      .pipe(
-        filter<IUpdateConnectionStateEvent>(event => event['@type'] === 'updateConnectionState'),
-        map(event => event.state['@type']),
-        tap(() => {
-          setTimeout(() => {
-            this.reRender();
-          }, 1000);
-        })
-      );
+    .pipe(
+      filter<IUpdateConnectionStateEvent>(event => event['@type'] === 'updateConnectionState'),
+      map(event => event.state['@type']),
+      map(eventType => this.getConnectionTypeString(eventType)),
+      tap(() => {
+        setTimeout(() => {
+          this.reRender();
+        }, 1000);
+      })
+    );
 
   elementStyle = defaultStyles();
 
@@ -70,6 +71,21 @@ export class ConversationsComponent implements OnInit {
         this.reRender();
       }, 1000);
     });
+  }
+
+  private getConnectionTypeString(type: ConnectionState): string {
+    switch (type) {
+      case 'connectionStateConnecting':
+      case 'connectionStateConnectingToProxy':
+        return '{yellow-fg}[~]{/} connecting';
+      case 'connectionStateReady':
+        return '{green-fg}[v]{/} connected';
+      case 'connectionStateWaitingForNetwork':
+        return '{red-fg}[x]{/} no connection';
+      case 'connectionStateUpdating':
+      default:
+        return '{grey-fg}[ ]{/} updating...';
+    }
   }
 
   ngOnInit() {

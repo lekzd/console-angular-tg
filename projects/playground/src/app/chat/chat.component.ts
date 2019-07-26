@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject} from 'rxjs';
-import {Widgets} from 'blessed';
+import {Widgets, escape} from 'blessed';
 import {IChatFullData, IMessage, IUser, IPollOption} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
@@ -205,15 +205,15 @@ export class ChatComponent implements OnInit {
   private getMessageContentString(message: IMessage): string[] | null {
     switch (message.content['@type']) {
       case 'messageText':
-        return multiParagraphWordWrap(escapeFormattingTags(message.content.text.text), 50, '\n');
+        return multiParagraphWordWrap(escapeFormattingTags(message.content.text), 50, '\n');
       case 'messagePhoto':
       case 'messageVideo':
       case 'messageAnimation':
       case 'messageAudio':
       case 'messageDocument':
-        return multiParagraphWordWrap(escapeFormattingTags(message.content.caption.text), 50, '\n');
+        return multiParagraphWordWrap(escapeFormattingTags(message.content.caption), 50, '\n');
       case 'messagePoll':
-        const question = multiParagraphWordWrap(escapeFormattingTags(message.content.poll.question), 50, '\n');
+        const question = multiParagraphWordWrap(escape(message.content.poll.question), 50, '\n');
 
         return [...question, ...message.content.poll.options.map(this.getVoteOptionString)]
       default:
