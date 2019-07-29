@@ -153,6 +153,10 @@ export class ChatComponent implements OnInit {
         return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined chat{/}`;
       case 'messageChatJoinByLink':
         return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined by invite link{/}`;
+      case 'messageChatUpgradeFrom':
+        return `${direction} ${date} ${author} {${fg(colors.fg11)}}created this supergroup{/}`;
+      case 'messageBasicGroupChatCreate':
+        return `${direction} ${date} ${author} {${fg(colors.fg11)}}created this chat{/}`;
       default:
         return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[${message.content['@type']}]{/}`;
     }

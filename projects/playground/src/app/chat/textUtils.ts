@@ -1,5 +1,6 @@
 import * as blessed from 'blessed';
 import { IMessageFormattedText, IFormattedTextEntity, TextEntityType } from '../../tg/tgInterfaces';
+import { colors, fg } from '../colors';
 
 function wordWrap(str: string, width: number, delimiter: string) {
   // use this on single lines of text only
@@ -61,10 +62,10 @@ function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[
       value.text = `{italic}${value.text}{/italic}`;
     }
     if (type === 'textEntityTypeMention') {
-      value.text = `{violet-fg}${value.text}{/violet-fg}`;
+      value.text = `{${fg(colors.fg9)}}${value.text}{/${fg(colors.fg9)}}`;
     }
     if (type === 'textEntityTypeUrl') {
-      value.text = `{blue-fg}${value.text}{/blue-fg}`;
+      value.text = `{${fg(colors.fg10)}}${value.text}{/${fg(colors.fg10)}}`;
     }
   });
 

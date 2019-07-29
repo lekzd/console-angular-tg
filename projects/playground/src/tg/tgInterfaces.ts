@@ -9,7 +9,9 @@ type IMessageContent
   | IMessageAudioContent
   | IMessagePhotoContent
   | IMessageVideoContent
-  | IMessagePollContent;
+  | IMessagePollContent
+  | IMessageBasicGroupChatCreate
+  | IMessageChatUpgradeFrom;
 
 export type TextEntityType
   = 'textEntityTypeBold'
@@ -71,6 +73,18 @@ export interface IMessageContentChatJoinByLink {
 export interface IMessagePollContent {
   '@type': 'messagePoll';
   poll: IPoll;
+}
+
+export interface IMessageChatUpgradeFrom {
+  '@type': 'messageChatUpgradeFrom';
+  title: string;
+  basic_group_id: number;
+}
+
+export interface IMessageBasicGroupChatCreate {
+  '@type': 'messageBasicGroupChatCreate';
+  title: string;
+  member_user_ids: number[];
 }
 
 export interface IMessageTextContent {
