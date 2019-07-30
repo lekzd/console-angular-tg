@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {TgClient} from '../../tg/tgClient';
 import {BehaviorSubject} from 'rxjs';
-import {Widgets, escape} from 'blessed';
+import {Widgets, escape, stripTags} from 'blessed';
 import {IChatFullData, IMessage, IUser, IPollOption} from '../../tg/tgInterfaces';
 import {AppService} from '../app.service';
 import {ConversationsService} from '../conversations/conversations.service';
@@ -141,6 +141,7 @@ export class ChatComponent implements OnInit {
     const author = this.formatUser(user, nameColor);
 
     switch (message.content['@type']) {
+      // messages with content
       case 'messageText':
         return `${direction} ${date} ${author}`;
       case 'messagePoll':
@@ -149,14 +150,17 @@ export class ChatComponent implements OnInit {
         return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[sticker ${message.content.sticker.emoji} ]{/}`;
       case 'messageAnimation':
         return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[animation ${message.content.animation.file_name}]{/}`;
+
+      // system messages
       case 'messageChatAddMembers':
-        return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined chat{/}`;
+        return `| {${fg(colors.fg11)}}${stripTags(author)} joined chat{/}`;
       case 'messageChatJoinByLink':
-        return `${direction} ${date} ${author} {${fg(colors.fg11)}}joined by invite link{/}`;
+        return `| {${fg(colors.fg11)}}${stripTags(author)} joined by invite link{/}`;
       case 'messageChatUpgradeFrom':
-        return `${direction} ${date} ${author} {${fg(colors.fg11)}}created this supergroup{/}`;
+        return `| {${fg(colors.fg11)}}${stripTags(author)} created this supergroup{/}`;
       case 'messageBasicGroupChatCreate':
-        return `${direction} ${date} ${author} {${fg(colors.fg11)}}created this chat{/}`;
+        return `| {${fg(colors.fg11)}}${stripTags(author)} created this chat{/}`;
+
       default:
         return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[${message.content['@type']}]{/}`;
     }
@@ -176,7 +180,7 @@ export class ChatComponent implements OnInit {
 
     const content = this.getMessageContentString(repliedMessage) || ['<no message found>'];
 
-    return `{${fg(colors.fg11)}}>>> ${content[0]}{/}`;
+    return `{${fg(colors.fg11)}}>>> ${stripTags(content[0])}{/}`;
   }
 
   private getVoteOptionString(option: IPollOption): string {
