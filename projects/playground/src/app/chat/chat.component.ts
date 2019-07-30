@@ -153,13 +153,13 @@ export class ChatComponent implements OnInit {
 
       // system messages
       case 'messageChatAddMembers':
-        return `| {${fg(colors.fg11)}}${stripTags(author)} joined chat{/}`;
+        return `{${fg(colors.fg11)}}+ ${stripTags(author)} joined chat{/}`;
       case 'messageChatJoinByLink':
-        return `| {${fg(colors.fg11)}}${stripTags(author)} joined by invite link{/}`;
+        return `{${fg(colors.fg11)}}+ ${stripTags(author)} joined by invite link{/}`;
       case 'messageChatUpgradeFrom':
-        return `| {${fg(colors.fg11)}}${stripTags(author)} created this supergroup{/}`;
+        return `{${fg(colors.fg11)}}* ${stripTags(author)} created this supergroup{/}`;
       case 'messageBasicGroupChatCreate':
-        return `| {${fg(colors.fg11)}}${stripTags(author)} created this chat{/}`;
+        return `{${fg(colors.fg11)}}* ${stripTags(author)} created this chat{/}`;
 
       default:
         return `${direction} ${date} ${author}: {${fg(colors.fg11)}}[${message.content['@type']}]{/}`;
@@ -245,7 +245,7 @@ export class ChatComponent implements OnInit {
     }
 
     if (rest) {
-      result.push(...rest);
+      result.push(...rest.map(s => '| ' + s));
     }
 
     return result;
