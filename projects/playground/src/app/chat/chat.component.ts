@@ -219,7 +219,7 @@ export class ChatComponent implements OnInit {
       case 'messagePoll':
         const question = multiParagraphWordWrap(escape(message.content.poll.question), 50, '\n');
 
-        return [...question, ...message.content.poll.options.map(this.getVoteOptionString)]
+        return [...question, ...message.content.poll.options.map(this.getVoteOptionString)];
       default:
         return null;
     }

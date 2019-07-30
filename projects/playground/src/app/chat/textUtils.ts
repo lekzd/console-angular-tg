@@ -5,28 +5,35 @@ import { colors, fg } from '../colors';
 function wordWrap(str: string, width: number, delimiter: string) {
   // use this on single lines of text only
 
-  if (str.length>width) {
-    var p=width
-    for (; p > 0 && str[p] != ' '; p--) {}
+  if (str.length > width) {
+    let p = width;
+
+    for (; p > 0 && str[p] !== ' '; p--) {}
+
     if (p > 0) {
-      var left = str.substring(0, p);
-      var right = str.substring(p + 1);
+      const left = str.substring(0, p);
+      const right = str.substring(p + 1);
 
       return left + delimiter + wordWrap(right, width, delimiter);
     }
   }
+
   return str;
 }
 
-export function multiParagraphWordWrap(str: string, width: number, delimiter: string) {
-  var arr = str.split(delimiter);
+export function multiParagraphWordWrap(str: string, width: number, delimiter: string): string[] {
+  const arr = str.split(delimiter);
 
-  for (var i = 0; i < arr.length; i++) {
-    if (arr[i].length > width)
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].length > width) {
       arr[i] = wordWrap(arr[i], width, delimiter).split(delimiter);
+    }
   }
 
-  return arr.reduce((acc, val) => acc.concat(val), []);
+  const result = arr.reduce((acc, val) => acc.concat(val), []);
+  const isEmpty = result.length === 0 || (result.length === 1 && !result[0]);
+
+  return isEmpty ? null : arr.reduce((acc, val) => acc.concat(val), []);
 }
 
 function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[]): string {
@@ -46,26 +53,26 @@ function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[
       : text.substr(entity.offset + entity.length);
 
     if (formattedToken) {
-      tokens.set({text: formattedToken}, entity.type["@type"]);
+      tokens.set({text: formattedToken}, entity.type['@type']);
     }
 
     if (tailToken) {
       tokens.set({text: tailToken}, null);
     }
-  };
+  }
 
   tokens.forEach((type, value) => {
     if (type === 'textEntityTypeBold') {
       value.text = `{bold}${value.text}{/bold}`;
     }
     if (type === 'textEntityTypeItalic') {
-      value.text = `{italic}${value.text}{/italic}`;
+      // not realized in terminals
     }
     if (type === 'textEntityTypeMention') {
       value.text = `{${fg(colors.fg9)}}${value.text}{/${fg(colors.fg9)}}`;
     }
     if (type === 'textEntityTypeUrl') {
-      value.text = `{${fg(colors.fg10)}}${value.text}{/${fg(colors.fg10)}}`;
+      value.text = `{underline}${value.text}{/underline}`;
     }
   });
 

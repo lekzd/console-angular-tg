@@ -15,7 +15,6 @@ type IElementRef<T> = ElementRef<{element: T}>;
       [padding]="{left: 1}"
       [inputOnFocus]="true"
       [keys]="true"
-      [mouse]="true"
       (submit)="onSubmit($event)"
       #textBox
       [style]="elementStyle"
