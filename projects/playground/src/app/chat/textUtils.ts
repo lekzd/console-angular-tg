@@ -36,6 +36,20 @@ export function multiParagraphWordWrap(str: string, width: number, delimiter: st
   return isEmpty ? null : arr.reduce((acc, val) => acc.concat(val), []);
 }
 
+function getTextEntityFormatting(type: TextEntityType, text: string): string {
+  switch (type) {
+    case 'textEntityTypeBold':
+      return `{bold}${text}{/bold}`;
+    case 'textEntityTypeHashtag':
+    case 'textEntityTypeMention':
+      return `{${fg(colors.fg9)}}${text}{/${fg(colors.fg9)}}`;
+    case 'textEntityTypeUrl':
+      return `{underline}${text}{/underline}`;
+    default:
+      return text;
+  }
+}
+
 function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[]): string {
   if (entities.length === 0) {
     return text;
@@ -49,8 +63,8 @@ function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[
     const nextEntity = entities[i + 1];
     const formattedToken = text.substr(entity.offset, entity.length);
     const tailToken = nextEntity
-      ? text.substr(entity.offset + entity.length, nextEntity.offset)
-      : text.substr(entity.offset + entity.length);
+      ? text.substring(entity.offset + entity.length, nextEntity.offset)
+      : text.substring(entity.offset + entity.length);
 
     if (formattedToken) {
       tokens.set({text: formattedToken}, entity.type['@type']);
@@ -62,24 +76,17 @@ function applyFormattingEntitities(text: string, entities: IFormattedTextEntity[
   }
 
   tokens.forEach((type, value) => {
-    if (type === 'textEntityTypeBold') {
-      value.text = `{bold}${value.text}{/bold}`;
-    }
-    if (type === 'textEntityTypeItalic') {
-      // not realized in terminals
-    }
-    if (type === 'textEntityTypeMention') {
-      value.text = `{${fg(colors.fg9)}}${value.text}{/${fg(colors.fg9)}}`;
-    }
-    if (type === 'textEntityTypeUrl') {
-      value.text = `{underline}${value.text}{/underline}`;
-    }
+    value.text = getTextEntityFormatting(type, value.text);
   });
 
   return [firstToken, ...[...tokens.keys()].map(v => v.text)].join('');
 }
 
 export function escapeFormattingTags(text: IMessageFormattedText): string {
+  if (!text.text) {
+    return text.text;
+  }
+
   const escaped = blessed.escape(text.text);
   const formatted = applyFormattingEntitities(escaped, text.entities);
 
